@@ -1,0 +1,22 @@
+packages:
+  "framer-motion": "For page transitions, scroll animations, and interactive elements"
+  "clsx": "For conditional class name merging"
+  "tailwind-merge": "For merging tailwind classes safely"
+  "@hookform/resolvers": "For form validation"
+  "zod": "For form schema validation"
+  "react-hook-form": "For form state management"
+
+images:
+  - path: "artifacts/college-website/public/images/logo.png"
+    description: "A prestigious, classic university crest logo featuring a stylized mountain peak (himalayas), an open book, and a sun in deep navy blue and rich gold colors, transparent background, clean professional look"
+    aspect_ratio: "1:1"
+  - path: "artifacts/college-website/public/images/hero-campus.png"
+    description: "A beautiful, prestigious college campus building in Kathmandu Nepal featuring traditional Nepali brick architecture mixed with modern glass elements, wide shot, golden hour lighting, students walking, vibrant"
+    aspect_ratio: "16:9"
+  - path: "artifacts/college-website/public/images/pattern-bg.png"
+    description: "A subtle, elegant seamless geometric pattern inspired by traditional Nepali wood carving and mandala motifs, deep navy blue on a slightly darker navy background, very low contrast, for use as a background texture"
+    aspect_ratio: "1:1"
+
+notes:
+  - This is a static frontend-only site showcasing a premium design for a Nepali college.
+  - All data is mocked in the frontend since no backend is provided.
