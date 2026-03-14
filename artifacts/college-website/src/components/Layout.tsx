@@ -56,16 +56,24 @@ export function Layout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Main Navigation */}
-      <header 
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className={`sticky top-0 z-50 w-full transition-all duration-300 ${
           isScrolled ? "glass-nav py-3" : "bg-white/95 backdrop-blur-sm border-b border-border/40 py-4"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
+            <motion.div 
+              initial={{ scale: 1 }}
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform"
+            >
               <GraduationCap className="w-6 h-6" />
-            </div>
+            </motion.div>
             <div className="flex flex-col">
               <span className="text-xl font-display font-black text-slate-900 leading-none tracking-tight">Tribhuvan</span>
               <span className="text-[10px] font-semibold tracking-widest text-primary uppercase">College of Excellence</span>
@@ -78,11 +86,16 @@ export function Layout({ children }: { children: ReactNode }) {
               <Link 
                 key={link.path} 
                 href={link.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location === link.path ? "text-primary" : "text-slate-600"
-                }`}
+                className="group relative"
               >
-                {link.name}
+                <span className={`text-sm font-medium transition-colors group-hover:text-primary ${
+                  location === link.path ? "text-primary" : "text-slate-600"
+                }`}>
+                  {link.name}
+                </span>
+                <span className={`absolute -bottom-1 left-0 w-full h-0.5 bg-primary origin-left transition-transform duration-300 ease-out ${
+                  location === link.path ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                }`} />
               </Link>
             ))}
             <Link href="/admissions">
@@ -100,7 +113,7 @@ export function Layout({ children }: { children: ReactNode }) {
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
-      </header>
+      </motion.header>
 
       {/* Mobile Nav */}
       <AnimatePresence>
