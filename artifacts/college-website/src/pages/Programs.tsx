@@ -1,89 +1,53 @@
-import { PageTransition, FadeIn } from "@/components/PageTransition";
-import { programs } from "@/lib/data";
-import { Search, Filter } from "lucide-react";
-import { useState } from "react";
+import { PageTransition } from "@/components/PageTransition";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
+import { Building2, Globe, HeartPulse, Scale, Palette, Monitor, ChevronRight } from "lucide-react";
 
 export default function Programs() {
-  const [filter, setFilter] = useState("All");
-
-  const filteredPrograms = filter === "All" 
-    ? programs 
-    : programs.filter(p => p.level.includes(filter));
+  const categories = [
+    { title: "Engineering & Technology", icon: <Building2 className="w-8 h-8 text-indigo-500" />, items: ["B.E. Civil Engineering", "B.E. Computer Engineering", "B.E. Architecture", "M.Sc. Structural Engineering"] },
+    { title: "Business Management", icon: <Globe className="w-8 h-8 text-emerald-500" />, items: ["Bachelor of Business Administration (BBA)", "Bachelor of Business Studies (BBS)", "Master of Business Administration (MBA)"] },
+    { title: "Medical Sciences", icon: <HeartPulse className="w-8 h-8 text-rose-500" />, items: ["Bachelor of Medicine, Bachelor of Surgery (MBBS)", "Bachelor of Dental Surgery (BDS)", "B.Sc. Nursing"] },
+    { title: "Law & Governance", icon: <Scale className="w-8 h-8 text-amber-500" />, items: ["BA LLB (5 Years)", "LLB (3 Years)", "LLM"] },
+    { title: "Humanities & Arts", icon: <Palette className="w-8 h-8 text-purple-500" />, items: ["BA in Sociology", "BA in English Literature", "MA in Rural Development"] },
+    { title: "Computer Science & IT", icon: <Monitor className="w-8 h-8 text-cyan-500" />, items: ["B.Sc. CSIT", "Bachelor of Information Management (BIM)", "Master of Information Technology (MIT)"] },
+  ];
 
   return (
     <PageTransition>
-      {/* Header */}
-      <div className="bg-primary py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-pattern opacity-10"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <FadeIn>
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
-              Academic Programs
-            </h1>
-            <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-              Explore our diverse range of undergraduate and graduate degree programs.
-            </p>
-          </FadeIn>
+      <div className="bg-slate-900 pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Badge variant="outline" className="text-amber-400 border-amber-400/50 bg-amber-400/10 mb-6">Academics</Badge>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black text-white mb-6">Our Programs</h1>
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light">
+            Discover comprehensive degree programs designed to equip you with the knowledge and skills needed in today's dynamic world.
+          </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        
-        {/* Filters & Search */}
-        <FadeIn className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
-          <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
-            {["All", "Bachelor's", "Master's"].map(level => (
-              <button
-                key={level}
-                onClick={() => setFilter(level)}
-                className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-                  filter === level 
-                    ? "bg-white shadow-sm text-primary" 
-                    : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                {level}
-              </button>
+      <div className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="bg-white rounded-3xl p-8 border border-slate-100 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-6">
+                  {cat.icon}
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-6 font-display">{cat.title}</h2>
+                <ul className="space-y-4">
+                  {cat.items.map((item, i) => (
+                    <li key={i} className="flex items-start group">
+                      <ChevronRight className="w-5 h-5 text-primary opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all mr-2 shrink-0" />
+                      <Link href="/admissions" className="text-slate-600 hover:text-primary font-medium transition-colors cursor-pointer">
+                        {item}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </div>
-
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input 
-              type="text" 
-              placeholder="Search programs..." 
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"
-            />
-          </div>
-        </FadeIn>
-
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPrograms.map((program, idx) => (
-            <FadeIn key={program.id} delay={idx * 0.1}>
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border hover:shadow-xl hover:border-primary/30 transition-all duration-300 h-full flex flex-col group">
-                <div className="mb-4">
-                  <span className="inline-block px-3 py-1 bg-secondary text-primary text-xs font-bold rounded-full mb-4">
-                    {program.level}
-                  </span>
-                  <h3 className="font-display text-2xl font-bold text-primary group-hover:text-accent transition-colors">
-                    {program.title}
-                  </h3>
-                </div>
-                <p className="text-muted-foreground text-sm flex-1 mb-6">
-                  {program.description}
-                </p>
-                <div className="pt-6 border-t border-border mt-auto flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground font-medium">4 Years Duration</span>
-                  <button className="text-primary font-bold text-sm hover:underline">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </FadeIn>
-          ))}
         </div>
-
       </div>
     </PageTransition>
   );

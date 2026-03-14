@@ -1,15 +1,16 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API specification for Nepal College Website
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: admissions
+    description: Admission form operations
 paths:
   /healthz:
     get:
@@ -24,6 +25,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /admissions:
+    post:
+      operationId: submitAdmission
+      tags: [admissions]
+      summary: Submit admission application
+      description: Submit a new admission application form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdmissionApplication"
+      responses:
+        "201":
+          description: Application submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdmissionApplicationResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      operationId: getAdmissions
+      tags: [admissions]
+      summary: Get all admission applications
+      description: Retrieve all submitted admission applications
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdmissionApplicationResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +79,108 @@ components:
           type: string
       required:
         - status
-
+    AdmissionApplication:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+        lastName:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, other]
+        address:
+          type: string
+        district:
+          type: string
+        program:
+          type: string
+        level:
+          type: string
+          enum: [bachelor, master, phd]
+        previousSchool:
+          type: string
+        gpa:
+          type: string
+        message:
+          type: string
+      required:
+        - firstName
+        - lastName
+        - email
+        - phone
+        - dateOfBirth
+        - gender
+        - address
+        - district
+        - program
+        - level
+        - previousSchool
+    AdmissionApplicationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+        address:
+          type: string
+        district:
+          type: string
+        program:
+          type: string
+        level:
+          type: string
+        previousSchool:
+          type: string
+        gpa:
+          type: string
+        message:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - phone
+        - dateOfBirth
+        - gender
+        - address
+        - district
+        - program
+        - level
+        - previousSchool
+        - status
+        - createdAt
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+      required:
+        - error

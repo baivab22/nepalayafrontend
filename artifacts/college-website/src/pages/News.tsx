@@ -1,99 +1,68 @@
-import { PageTransition, FadeIn } from "@/components/PageTransition";
-import { news } from "@/lib/data";
+import { PageTransition } from "@/components/PageTransition";
 import { Calendar, ArrowRight } from "lucide-react";
+import { Link } from "wouter";
 
 export default function News() {
+  const newsItems = [
+    {
+      title: "TCE Engineering Team Wins National Robotics Competition",
+      date: "Baisakh 15, 2081",
+      category: "Achievement",
+      desc: "Our undergraduate computer engineering students secured the first position at the National Robotics Championship held in Kathmandu.",
+    },
+    {
+      title: "New AI Research Lab Inaugurated",
+      date: "Chaitra 20, 2080",
+      category: "Campus Update",
+      desc: "The honorable Minister of Education inaugurated our state-of-the-art AI and Data Science research facility at the Pulchowk campus.",
+    },
+    {
+      title: "International Medical Conference 2024",
+      date: "Chaitra 05, 2080",
+      category: "Event",
+      desc: "TCE hosted over 500 delegates from 12 countries for the annual medical symposium focusing on South Asian health challenges.",
+    },
+  ];
+
   return (
     <PageTransition>
-      {/* Header */}
-      <div className="bg-primary py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-pattern opacity-10"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <FadeIn>
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
-              News & Events
-            </h1>
-            <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-              Stay updated with the latest happenings at TCE.
-            </p>
-          </FadeIn>
+      <div className="bg-slate-900 pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-display font-black text-white mb-6">News & Events</h1>
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light">
+            Stay updated with the latest happenings, achievements, and events from our vibrant campus.
+          </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
-          {/* Main News List */}
-          <div className="lg:col-span-8 space-y-10">
-            {news.map((item, idx) => (
-              <FadeIn key={item.id} delay={idx * 0.1}>
-                <article className="flex flex-col sm:flex-row gap-6 group bg-white rounded-2xl p-4 border border-border shadow-sm hover:shadow-md transition-shadow">
-                  <div className="sm:w-1/3 rounded-xl overflow-hidden shrink-0">
-                    <img 
-                      src={item.image} 
-                      alt={item.title} 
-                      className="w-full h-48 sm:h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="sm:w-2/3 py-2 flex flex-col justify-center">
-                    <div className="flex items-center gap-4 mb-3">
-                      <span className="text-xs font-bold text-accent uppercase tracking-wider bg-accent/10 px-2 py-1 rounded">
-                        {item.category}
-                      </span>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {item.date}
-                      </span>
-                    </div>
-                    <h2 className="font-display text-2xl font-bold text-primary mb-3 group-hover:text-accent transition-colors">
-                      {item.title}
-                    </h2>
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                      {item.summary}
-                    </p>
-                    <button className="inline-flex items-center text-primary font-semibold text-sm mt-auto w-fit group/btn">
-                      Read full article
-                      <ArrowRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                </article>
-              </FadeIn>
+      <div className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-8">
+            {newsItems.map((news, idx) => (
+              <div key={idx} className="group cursor-pointer">
+                <div className="h-48 rounded-3xl bg-slate-100 mb-6 overflow-hidden relative">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/80 to-emerald-500/80 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                <div className="flex items-center space-x-4 mb-4">
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full">
+                    {news.category}
+                  </span>
+                  <span className="text-sm text-slate-500 flex items-center">
+                    <Calendar className="w-4 h-4 mr-1" /> {news.date}
+                  </span>
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary transition-colors font-display leading-tight">
+                  {news.title}
+                </h3>
+                <p className="text-slate-600 mb-4 leading-relaxed">
+                  {news.desc}
+                </p>
+                <span className="text-primary font-medium inline-flex items-center group-hover:underline">
+                  Read Full Story <ArrowRight className="w-4 h-4 ml-1" />
+                </span>
+              </div>
             ))}
           </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-4 space-y-8">
-            <FadeIn delay={0.3} className="bg-secondary rounded-2xl p-6 border border-border">
-              <h3 className="font-display text-xl font-bold text-primary mb-6 border-b border-border pb-4">Categories</h3>
-              <ul className="space-y-3">
-                {['All News', 'Academic', 'Events', 'Alumni', 'Research', 'Sports'].map((cat) => (
-                  <li key={cat}>
-                    <button className="w-full flex justify-between items-center text-sm text-muted-foreground hover:text-primary transition-colors">
-                      {cat}
-                      <span className="bg-white px-2 py-0.5 rounded text-xs">{(Math.random() * 20).toFixed(0)}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </FadeIn>
-
-            <FadeIn delay={0.4} className="bg-primary rounded-2xl p-8 text-white text-center shadow-lg relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent/20 rounded-full blur-2xl"></div>
-              <h3 className="font-display text-2xl font-bold mb-4">Newsletter</h3>
-              <p className="text-white/80 text-sm mb-6">Subscribe to our monthly newsletter to get the latest updates directly in your inbox.</p>
-              <div className="space-y-3">
-                <input 
-                  type="email" 
-                  placeholder="Your email address" 
-                  className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:border-accent"
-                />
-                <button className="w-full py-3 bg-accent text-primary font-bold rounded-lg hover:bg-yellow-400 transition-colors">
-                  Subscribe
-                </button>
-              </div>
-            </FadeIn>
-          </div>
-
         </div>
       </div>
     </PageTransition>

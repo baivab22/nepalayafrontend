@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -6,8 +6,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: 'DM Sans', sans-serif;
-  --font-display: 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
 
   /* Premium Academic Palette */
   --color-background: hsl(var(--background));
@@ -46,21 +46,21 @@
 }
 
 :root {
-  /* White background */
-  --background: 0 0% 100%;
-  /* Dark Navy text */
+  /* Near white background */
+  --background: 0 0% 98%;
+  /* Deep Slate text */
   --foreground: 222 47% 11%;
   
-  /* Deep Navy Blue (#1a2f5c) */
-  --primary: 221 56% 23%;
+  /* Deep Indigo/Violet (#4F46E5) */
+  --primary: 243 75% 59%;
   --primary-foreground: 0 0% 100%;
   
-  /* Off-white/slate for secondary sections */
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
+  /* Emerald (#10B981) */
+  --secondary: 160 84% 39%;
+  --secondary-foreground: 0 0% 100%;
   
-  /* Warm Gold/Amber (#d4af37) */
-  --accent: 46 65% 52%;
+  /* Amber (#F59E0B) */
+  --accent: 38 92% 50%;
   --accent-foreground: 0 0% 100%;
   
   --muted: 210 40% 96%;
@@ -77,28 +77,28 @@
   
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 221 56% 23%;
+  --ring: 243 75% 59%;
   
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --background: 222 47% 11%;
+  --background: 222 47% 11%; /* #0F172A */
   --foreground: 210 40% 98%;
   
-  --primary: 221 56% 43%;
+  --primary: 243 75% 65%;
   --primary-foreground: 0 0% 100%;
   
-  --secondary: 217 32% 17%;
-  --secondary-foreground: 210 40% 98%;
+  --secondary: 160 84% 39%;
+  --secondary-foreground: 0 0% 100%;
   
-  --accent: 46 65% 52%;
+  --accent: 38 92% 50%;
   --accent-foreground: 222 47% 11%;
   
   --muted: 217 32% 17%;
   --muted-foreground: 215 20% 65%;
   
-  --card: 222 47% 11%;
+  --card: 222 47% 13%;
   --card-foreground: 210 40% 98%;
   
   --popover: 222 47% 11%;
@@ -109,7 +109,7 @@
   
   --border: 217 32% 17%;
   --input: 217 32% 17%;
-  --ring: 224 71% 4%;
+  --ring: 243 75% 65%;
 }
 
 @layer base {
@@ -118,32 +118,47 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground selection:bg-primary/20 selection:text-primary;
   }
   
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply tracking-tight;
+    @apply tracking-tight font-bold;
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
   .glass-nav {
-    @apply bg-white/80 backdrop-blur-md border-b border-border/50 shadow-sm transition-all duration-300;
+    @apply bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.03)] supports-[backdrop-filter]:bg-white/60 transition-all duration-300;
   }
+  
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-lg border border-white/40 shadow-xl;
+  }
+
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/60;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 animate-in fade-in;
   }
+  
   .text-gradient-gold {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-yellow-300;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-yellow-400;
   }
-  .bg-pattern {
-    background-image: url('../public/images/pattern-bg.png');
-    background-repeat: repeat;
-    background-size: 400px;
-    background-blend-mode: overlay;
+  
+  .bg-mesh {
+    background-color: #0f172a;
+    background-image: 
+      radial-gradient(at 40% 20%, hsla(243, 75%, 59%, 0.3) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(262, 83%, 58%, 0.3) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(243, 75%, 59%, 0.3) 0px, transparent 50%);
+  }
+
+  .blob-shape {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    animation: blob-morph 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes blob-morph {
+    0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+    100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
   }
 }

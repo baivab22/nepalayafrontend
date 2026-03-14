@@ -1,88 +1,49 @@
-import { PageTransition, FadeIn } from "@/components/PageTransition";
-import { faculty } from "@/lib/data";
-import { Search, Mail, BookOpen } from "lucide-react";
-import { useState } from "react";
+import { PageTransition } from "@/components/PageTransition";
+import { Mail } from "lucide-react";
 
 export default function Faculty() {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredFaculty = faculty.filter(f => 
-    f.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    f.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const faculties = [
+    { name: "Dr. Ram Shrestha", role: "Dean, Engineering", desc: "Ph.D. in Civil Engineering (MIT). Over 20 years of experience in structural design.", dept: "Engineering" },
+    { name: "Prof. Sita Koirala", role: "Head of Business Studies", desc: "MBA (Harvard). Specialist in strategic management and entrepreneurship.", dept: "Management" },
+    { name: "Dr. Hari Thapa", role: "Professor, Medical Sciences", desc: "MD, MS. Leading researcher in community medicine in Nepal.", dept: "Medical" },
+    { name: "Dr. Gita Poudel", role: "Associate Prof, Law", desc: "LLD. Expert in Constitutional Law and Human Rights.", dept: "Law" },
+    { name: "Prof. Binod Gurung", role: "Head of IT", desc: "Ph.D. in Computer Science. Focus on AI and Machine Learning.", dept: "Computer Science" },
+    { name: "Dr. Anu Magar", role: "Lecturer, Humanities", desc: "Ph.D. in Sociology. Research focus on Himalayan cultures.", dept: "Humanities" },
+  ];
 
   return (
     <PageTransition>
-      {/* Header */}
-      <div className="bg-primary py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-pattern opacity-10"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <FadeIn>
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
-              Our Faculty
-            </h1>
-            <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-              Learn from distinguished academics and industry professionals.
-            </p>
-          </FadeIn>
+      <div className="bg-slate-900 pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-display font-black text-white mb-6">Our Distinguished Faculty</h1>
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light">
+            Learn from the brightest minds. Our professors are renowned experts, researchers, and thought leaders.
+          </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        
-        {/* Search */}
-        <FadeIn className="max-w-xl mx-auto mb-16">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input 
-              type="text" 
-              placeholder="Search by name or department..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-lg shadow-sm"
-            />
-          </div>
-        </FadeIn>
-
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredFaculty.map((person, idx) => (
-            <FadeIn key={person.id} delay={idx * 0.1}>
-              <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border group hover:shadow-xl transition-all duration-300">
-                <div className="aspect-[4/5] overflow-hidden relative">
-                  <img 
-                    src={person.image} 
-                    alt={person.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div className="flex gap-2">
-                      <button className="w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center hover:bg-accent transition-colors">
-                        <Mail className="w-5 h-5" />
-                      </button>
-                      <button className="w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center hover:bg-accent transition-colors">
-                        <BookOpen className="w-5 h-5" />
-                      </button>
-                    </div>
+      <div className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {faculties.map((fac, idx) => (
+              <div key={idx} className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-shadow text-center">
+                <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-tr from-primary to-emerald-400 p-1 mb-6">
+                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-3xl font-display font-bold text-slate-800">
+                    {fac.name.charAt(4)}
                   </div>
                 </div>
-                <div className="p-5 text-center border-t border-border">
-                  <h3 className="font-display font-bold text-lg text-foreground mb-1">{person.name}</h3>
-                  <p className="text-accent font-semibold text-sm mb-1">{person.designation}</p>
-                  <p className="text-muted-foreground text-xs">{person.department}</p>
-                  <p className="text-muted-foreground text-xs mt-2 italic">{person.education}</p>
-                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">{fac.name}</h3>
+                <div className="text-primary font-medium text-sm mb-4">{fac.role}</div>
+                <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+                  {fac.desc}
+                </p>
+                <a href="#" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 text-slate-500 hover:bg-primary hover:text-white transition-colors">
+                  <Mail className="w-4 h-4" />
+                </a>
               </div>
-            </FadeIn>
-          ))}
-        </div>
-        
-        {filteredFaculty.length === 0 && (
-          <div className="text-center py-20 text-muted-foreground">
-            No faculty members found matching "{searchTerm}"
+            ))}
           </div>
-        )}
-
+        </div>
       </div>
     </PageTransition>
   );
