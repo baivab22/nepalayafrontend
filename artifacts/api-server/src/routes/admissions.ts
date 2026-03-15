@@ -79,4 +79,57 @@ router.get("/admissions", async (_req, res) => {
   }
 });
 
+router.get("/admissions/:id", async (req, res) => {
+  try {
+    const admission = await AdmissionModel.findById(req.params.id).lean().exec();
+    if (!admission) {
+      res.status(404).json({ error: "Application not found" });
+      return;
+    }
+    res.json(serializeAdmission(admission as AdmissionRecord));
+  } catch (err) {
+    console.error("Fetch admission error:", err);
+    res.status(500).json({ error: "Failed to fetch application" });
+  }
+});
+
+router.patch("/admissions/:id", async (req, res) => {
+  try {
+    const { status } = req.body as { status: string };
+    if (!["pending", "accepted", "rejected"].includes(status)) {
+      res.status(400).json({ error: "Invalid status value" });
+      return;
+    }
+    const admission = await AdmissionModel.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true },
+    )
+      .lean()
+      .exec();
+    if (!admission) {
+      res.status(404).json({ error: "Application not found" });
+      return;
+    }
+    res.json(serializeAdmission(admission as AdmissionRecord));
+  } catch (err) {
+    console.error("Update admission error:", err);
+    res.status(500).json({ error: "Failed to update application" });
+  }
+});
+
+router.delete("/admissions/:id", async (req, res) => {
+  try {
+    const admission = await AdmissionModel.findByIdAndDelete(req.params.id).exec();
+    if (!admission) {
+      res.status(404).json({ error: "Application not found" });
+      return;
+    }
+    res.status(204).send();
+  } catch (err) {
+    console.error("Delete admission error:", err);
+    res.status(500).json({ error: "Failed to delete application" });
+  }
+});
+
 export default router;

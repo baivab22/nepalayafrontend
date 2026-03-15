@@ -14,6 +14,7 @@ import Admissions from "@/pages/Admissions";
 import Faculty from "@/pages/Faculty";
 import News from "@/pages/News";
 import Contact from "@/pages/Contact";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -81,20 +82,25 @@ function LoadingScreen() {
 
 function Router() {
   return (
-    <Layout>
-      <AnimatePresence mode="wait">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/about" component={About} />
-          <Route path="/programs" component={Programs} />
-          <Route path="/admissions" component={Admissions} />
-          <Route path="/faculty" component={Faculty} />
-          <Route path="/news" component={News} />
-          <Route path="/contact" component={Contact} />
-          <Route component={NotFound} />
-        </Switch>
-      </AnimatePresence>
-    </Layout>
+    <Switch>
+      <Route path="/admin" component={Admin} />
+      <Route>
+        <Layout>
+          <AnimatePresence mode="wait">
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/about" component={About} />
+              <Route path="/programs" component={Programs} />
+              <Route path="/admissions" component={Admissions} />
+              <Route path="/faculty" component={Faculty} />
+              <Route path="/news" component={News} />
+              <Route path="/contact" component={Contact} />
+              <Route component={NotFound} />
+            </Switch>
+          </AnimatePresence>
+        </Layout>
+      </Route>
+    </Switch>
   );
 }
 
