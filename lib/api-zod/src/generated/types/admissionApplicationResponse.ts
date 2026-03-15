@@ -7,7 +7,8 @@
  */
 
 export interface AdmissionApplicationResponse {
-  id: number;
+  /** MongoDB ObjectId */
+  id: string;
   firstName: string;
   lastName: string;
   email: string;

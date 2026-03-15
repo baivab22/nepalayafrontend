@@ -1,31 +1,67 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
+import mongoose from "mongoose";
 import { z } from "zod/v4";
 
-export const admissionsTable = pgTable("admissions", {
-  id: serial("id").primaryKey(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone").notNull(),
-  dateOfBirth: text("date_of_birth").notNull(),
-  gender: text("gender").notNull(),
-  address: text("address").notNull(),
-  district: text("district").notNull(),
-  program: text("program").notNull(),
-  level: text("level").notNull(),
-  previousSchool: text("previous_school").notNull(),
-  gpa: text("gpa"),
-  message: text("message"),
-  status: text("status").notNull().default("pending"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+const genderValues = ["male", "female", "other"] as const;
+const levelValues = ["bachelor", "master", "phd"] as const;
+const statusValues = ["pending", "accepted", "rejected"] as const;
 
-export const insertAdmissionSchema = createInsertSchema(admissionsTable).omit({
-  id: true,
-  status: true,
-  createdAt: true,
+export const insertAdmissionSchema = z.object({
+  firstName: z.string().min(2),
+  lastName: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(1),
+  dateOfBirth: z.string().min(1),
+  gender: z.enum(genderValues),
+  address: z.string().min(1),
+  district: z.string().min(1),
+  program: z.string().min(1),
+  level: z.enum(levelValues),
+  previousSchool: z.string().min(1),
+  gpa: z.string().optional(),
+  message: z.string().optional(),
 });
 
 export type InsertAdmission = z.infer<typeof insertAdmissionSchema>;
-export type Admission = typeof admissionsTable.$inferSelect;
+
+interface AdmissionDbRecord extends InsertAdmission {
+  status: (typeof statusValues)[number];
+  createdAt: Date;
+}
+
+const admissionSchema = new mongoose.Schema<AdmissionDbRecord>(
+  {
+    firstName: { type: String, required: true, trim: true, minlength: 2 },
+    lastName: { type: String, required: true, trim: true, minlength: 2 },
+    email: { type: String, required: true, trim: true, lowercase: true },
+    phone: { type: String, required: true, trim: true },
+    dateOfBirth: { type: String, required: true, trim: true },
+    gender: { type: String, enum: genderValues, required: true },
+    address: { type: String, required: true, trim: true },
+    district: { type: String, required: true, trim: true },
+    program: { type: String, required: true, trim: true },
+    level: { type: String, enum: levelValues, required: true },
+    previousSchool: { type: String, required: true, trim: true },
+    gpa: { type: String, trim: true },
+    message: { type: String, trim: true },
+    status: {
+      type: String,
+      enum: statusValues,
+      default: "pending",
+      required: true,
+    },
+  },
+  {
+    timestamps: { createdAt: true, updatedAt: false },
+    versionKey: false,
+  },
+);
+
+export const AdmissionModel =
+  (mongoose.models.Admission as mongoose.Model<AdmissionDbRecord>) ||
+  mongoose.model<AdmissionDbRecord>("Admission", admissionSchema);
+
+export type Admission = InsertAdmission & {
+  id: string;
+  status: (typeof statusValues)[number];
+  createdAt: Date;
+};

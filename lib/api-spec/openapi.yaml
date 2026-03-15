@@ -129,7 +129,8 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          description: MongoDB ObjectId
         firstName:
           type: string
         lastName:

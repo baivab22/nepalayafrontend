@@ -44,7 +44,7 @@ export const SubmitAdmissionBody = zod.object({
  * @summary Get all admission applications
  */
 export const GetAdmissionsResponseItem = zod.object({
-  id: zod.number(),
+  id: zod.string().describe("MongoDB ObjectId"),
   firstName: zod.string(),
   lastName: zod.string(),
   email: zod.string(),

@@ -8,7 +8,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckCircle2, ChevronRight, AlertCircle, FileText } from "lucide-react";
-import { useSubmitAdmission } from "@workspace/api-client-react";
+import {
+  useSubmitAdmission,
+  type AdmissionApplicationResponse,
+} from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -43,7 +46,8 @@ const PROGRAMS = [
 
 export default function Admissions() {
   const [step, setStep] = useState(1);
-  const [submittedData, setSubmittedData] = useState<any>(null);
+  const [submittedData, setSubmittedData] =
+    useState<AdmissionApplicationResponse | null>(null);
   const { toast } = useToast();
   
   const submitMutation = useSubmitAdmission();
