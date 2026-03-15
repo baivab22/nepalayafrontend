@@ -161,7 +161,8 @@ function DetailDialog({
 function Dashboard({ onLogout }: { onLogout: () => void }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: admissions = [], isLoading, refetch } = useGetAdmissions();
+  const { data, isLoading, refetch } = useGetAdmissions();
+  const admissions = Array.isArray(data) ? data : [];
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | Status>("all");
