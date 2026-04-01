@@ -1,34 +1,63 @@
 import { PageTransition } from "@/components/PageTransition";
 import { Calendar, ArrowRight } from "lucide-react";
-import { Link } from "wouter";
 import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+interface NewsItem {
+  _id?: string;
+  title: string;
+  date: string;
+  category: string;
+  description: string;
+  image?: string;
+  order?: number;
+}
+
+const getImageUrl = (image?: string) => {
+  if (!image) return "";
+  if (image.startsWith("http://") || image.startsWith("https://")) return image;
+  if (image.startsWith("/api/")) return `${API_URL}${image}`;
+  return `${API_URL}/api/news/image/${image}`;
+};
+
+const formatDisplayDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    return format(date, "MMM dd, yyyy");
+  } catch {
+    return dateString;
+  }
+};
 
 export default function News() {
-  const newsItems = [
-    {
-      title: "TCE Engineering Team Wins National Robotics Competition",
-      date: "Baisakh 15, 2081",
-      category: "Achievement",
-      desc: "Our undergraduate computer engineering students secured the first position at the National Robotics Championship held in Kathmandu.",
-    },
-    {
-      title: "New AI Research Lab Inaugurated",
-      date: "Chaitra 20, 2080",
-      category: "Campus Update",
-      desc: "The honorable Minister of Education inaugurated our state-of-the-art AI and Data Science research facility at the Pulchowk campus.",
-    },
-    {
-      title: "International Medical Conference 2024",
-      date: "Chaitra 05, 2080",
-      category: "Event",
-      desc: "TCE hosted over 500 delegates from 12 countries for the annual medical symposium focusing on South Asian health challenges.",
-    },
-  ];
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<NewsItem | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`${API_URL}/api/news`)
+      .then(res => res.json())
+      .then(data => {
+        const items = Array.isArray(data) ? data : (data?.news || []);
+        setNewsItems(items);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching news:", err);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <PageTransition>
-      <div className="bg-slate-900 pt-32 pb-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-mesh opacity-50 z-0" />
+      <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 pt-32 pb-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <motion.h1 
             initial={{ opacity: 0, y: 40 }}
@@ -51,49 +80,114 @@ export default function News() {
 
       <div className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-900">Latest Updates</h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Browse recent announcements, events, and achievements from our campus.
+              </p>
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-8">
-            {newsItems.map((news, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, delay: idx * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className="group cursor-pointer relative"
-              >
-                {/* Animated Gradient Border on Hover */}
-                <div className="absolute -inset-[2px] bg-gradient-to-r from-primary to-emerald-500 rounded-3xl opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300" />
-                
-                <div className="bg-white rounded-[22px] p-6 relative h-full flex flex-col z-10 border border-slate-100">
-                  <div className="h-48 rounded-2xl bg-slate-100 mb-6 overflow-hidden relative">
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 w-full h-full transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/80 to-emerald-500/80 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
-                  </div>
-                  <div className="flex items-center space-x-4 mb-4">
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full">
-                      {news.category}
+            {loading ? (
+              Array.from({ length: 3 }).map((_, idx) => (
+                <Skeleton key={idx} className="h-80 rounded-2xl" />
+              ))
+            ) : newsItems.length === 0 ? (
+              <div className="col-span-full text-center text-slate-500">No news found.</div>
+            ) : (
+              newsItems.map((news, idx) => (
+                <motion.div 
+                  key={news._id || idx}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.6, delay: idx * 0.15, ease: [0.22, 1, 0.36, 1] }}
+                  className="group cursor-pointer h-full"
+                  onClick={() => setSelected(news)}
+                >
+                  <div className="bg-white rounded-2xl p-6 h-full flex flex-col border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200">
+                    <div className="h-44 rounded-xl bg-slate-100 mb-5 overflow-hidden">
+                      {news.image ? (
+                        <img
+                          src={getImageUrl(news.image)}
+                          alt={news.title}
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+                          Image coming soon
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-4 mb-4">
+                      <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full">
+                        {news.category}
+                      </span>
+                      <span className="text-sm text-slate-500 flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" /> {formatDisplayDate(news.date)}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary transition-colors font-display leading-tight">
+                      {news.title}
+                    </h3>
+                    <p className="text-slate-600 mb-6 leading-relaxed flex-grow line-clamp-3">
+                      {news.description}
+                    </p>
+                    <span className="text-primary font-medium inline-flex items-center group-hover:underline">
+                      Read full story <ArrowRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                     </span>
-                    <span className="text-sm text-slate-500 flex items-center">
-                      <Calendar className="w-4 h-4 mr-1" /> {news.date}
-                    </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary transition-colors font-display leading-tight">
-                    {news.title}
-                  </h3>
-                  <p className="text-slate-600 mb-6 leading-relaxed flex-grow">
-                    {news.desc}
-                  </p>
-                  <span className="text-primary font-medium inline-flex items-center group-hover:underline">
-                    Read Full Story <ArrowRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </div>
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selected && (
+            <>
+              {selected.image && (
+                <div className="w-full h-64 rounded-xl overflow-hidden mb-5 bg-slate-100">
+                  <img
+                    src={getImageUrl(selected.image)}
+                    alt={selected.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <DialogHeader className="space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary">
+                    {selected.category}
+                  </span>
+                  <span className="text-sm text-slate-500 flex items-center">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {formatDisplayDate(selected.date)}
+                  </span>
+                </div>
+                <DialogTitle className="text-2xl font-bold text-slate-900">
+                  {selected.title}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="mt-4 border-t pt-4">
+                <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">
+                  {selected.description}
+                </p>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button variant="outline" onClick={() => setSelected(null)}>
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </PageTransition>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Switch, Route, useLocation, Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetAdmissions,
@@ -41,6 +42,14 @@ import {
 } from "@/components/ui/select";
 import { GraduationCap, LogOut, Search, Eye, Trash2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+// Import admin subpages
+import AdminDashboard from "./admin/Dashboard";
+import AdminPrograms from "./admin/Programs";
+import AdminFaculty from "./admin/Faculty";
+import AdminNews from "./admin/News";
+import AdminAdmissions from "./admin/Admissions";
+import AdminModelImage from "./admin/ModelImage";
+import ModelImageUpload from "@/components/ModelImageUpload";
 
 const ADMIN_PASSWORD = "admin@tce2025";
 const AUTH_KEY = "tce_admin_auth";
@@ -186,7 +195,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const updateStatus = async (id: string, status: Status) => {
     setUpdatingId(id);
     try {
-      const res = await fetch(`/api/admissions/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admissions/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -204,7 +213,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const deleteAdmission = async (id: string) => {
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admissions/${id}`, { method: "DELETE" });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admissions/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed");
       await queryClient.invalidateQueries({ queryKey: getGetAdmissionsQueryKey() });
       toast({ title: "Deleted", description: "Application removed successfully." });
@@ -225,6 +234,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Model Image Upload Section */}
+      <div className="max-w-2xl mx-auto mt-6 mb-6">
+        <ModelImageUpload />
+      </div>
       {/* Header */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -403,9 +416,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
 // ─── Page Root ────────────────────────────────────────────────────────────────
 export default function Admin() {
-  const [authed, setAuthed] = useState(
-    () => sessionStorage.getItem(AUTH_KEY) === "1",
-  );
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem(AUTH_KEY) === "1");
+  const [location, setLocation] = useLocation();
 
   const handleLogout = () => {
     sessionStorage.removeItem(AUTH_KEY);
@@ -413,5 +425,52 @@ export default function Admin() {
   };
 
   if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
-  return <Dashboard onLogout={handleLogout} />;
+
+  // Sidebar navigation links
+  const nav = [
+    { label: "Dashboard", path: "/admin/dashboard" },
+    { label: "Programs", path: "/admin/programs" },
+    { label: "Faculty", path: "/admin/faculty" },
+    { label: "News", path: "/admin/news" },
+    { label: "Admissions", path: "/admin/admissions" },
+    { label: "Model Image", path: "/admin/model-image" },
+  ];
+
+  // Default to dashboard if at /admin
+  if (location === "/admin") setLocation("/admin/dashboard");
+
+  return (
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r border-slate-100 flex flex-col">
+        <div className="h-20 flex items-center justify-center font-bold text-xl text-primary border-b border-slate-100">Nepalaya Admin</div>
+        <nav className="flex-1 px-4 py-6 space-y-2">
+          {nav.map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`block px-4 py-2 rounded-lg font-medium text-slate-700 hover:bg-primary/10 ${location === item.path ? "bg-primary/10 text-primary" : ""}`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-slate-100">
+          <button className="w-full py-2 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-slate-200" onClick={handleLogout}>Logout</button>
+        </div>
+      </aside>
+      {/* Main Content */}
+      <main className="flex-1 min-h-screen">
+        <Switch>
+          <Route path="/admin/dashboard" component={AdminDashboard} />
+          <Route path="/admin/programs" component={AdminPrograms} />
+          <Route path="/admin/faculty" component={AdminFaculty} />
+          <Route path="/admin/news" component={AdminNews} />
+          <Route path="/admin/admissions" component={AdminAdmissions} />
+          <Route path="/admin/model-image" component={AdminModelImage} />
+          <Route> <div className="p-8">Not found</div> </Route>
+        </Switch>
+      </main>
+    </div>
+  );
 }

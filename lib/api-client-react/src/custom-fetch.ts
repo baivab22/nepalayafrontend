@@ -297,9 +297,18 @@ export async function customFetch<T = unknown>(
     headers.set("accept", DEFAULT_JSON_ACCEPT);
   }
 
-  const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  // Prepend VITE_API_BASE_URL to relative API paths
+  let url = resolveUrl(input);
+  if (url.startsWith("/api/")) {
+    const base = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL
+      ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
+      : "";
+    url = base + url;
+  }
+  const requestInfo = { method, url };
+
+  const response = await fetch(url, { ...init, method, headers });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

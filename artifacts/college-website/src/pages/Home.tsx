@@ -1,11 +1,11 @@
+import ModelImageModal from "@/components/ModelImageModal";
 import { PageTransition } from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { 
-  ArrowRight, BookOpen, Users, Trophy, Globe, 
-  Microscope, Building2, HeartPulse, Scale, Palette, Monitor,
-  ChevronDown
+  ArrowRight, BookOpen, Users, Trophy, ChevronDown,
+  Microscope
 } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
@@ -14,20 +14,7 @@ const ProgramCard = ({ prog, idx }: { prog: any, idx: number }) => {
   const y = useMotionValue(0);
   const rotateX = useTransform(y, [-100, 100], [5, -5]);
   const rotateY = useTransform(x, [-100, 100], [-8, 8]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    x.set(e.clientX - centerX);
-    y.set(e.clientY - centerY);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
+  const defaultColors = "from-indigo-500 to-blue-600";
   return (
     <motion.div
       initial={{ opacity: 0, y: 60 }}
@@ -37,28 +24,32 @@ const ProgramCard = ({ prog, idx }: { prog: any, idx: number }) => {
       style={{ perspective: 1000 }}
     >
       <motion.div
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseMove={e => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          x.set(e.clientX - centerX);
+          y.set(e.clientY - centerY);
+        }}
+        onMouseLeave={() => { x.set(0); y.set(0); }}
         style={{ rotateX, rotateY }}
         whileHover={{ scale: 1.03 }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
         className="group relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-slate-100 overflow-hidden h-full"
       >
-        <div className={`absolute inset-0 bg-gradient-to-br ${prog.colors} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
-        <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${prog.colors} opacity-5 rounded-bl-[100px] transition-transform duration-500 group-hover:scale-110`} />
-        
+        <div className={`absolute inset-0 bg-gradient-to-br ${prog.colors || defaultColors} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
+        <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${prog.colors || defaultColors} opacity-5 rounded-bl-[100px] transition-transform duration-500 group-hover:scale-110`} />
         <motion.div 
-          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${prog.colors} flex items-center justify-center text-white mb-6 shadow-md`}
+          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${prog.colors || defaultColors} flex items-center justify-center text-white mb-6 shadow-md`}
           whileHover={{ scale: 1.1 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
-          {prog.icon}
+          {/* Optionally render icon if available as SVG or emoji */}
+          {prog.icon && <span dangerouslySetInnerHTML={{ __html: prog.icon }} />}
         </motion.div>
-        
         <h3 className="text-2xl font-bold text-slate-900 mb-3">{prog.title}</h3>
-        <p className="text-slate-600 mb-8 leading-relaxed relative z-10">{prog.desc}</p>
-        
-        <Link href="/programs" className={`inline-flex items-center font-bold text-transparent bg-clip-text bg-gradient-to-r ${prog.colors} group-hover:opacity-80 transition-opacity`}>
+        <p className="text-slate-600 mb-8 leading-relaxed relative z-10">{prog.description}</p>
+        <Link href="/programs" className={`inline-flex items-center font-bold text-transparent bg-clip-text bg-gradient-to-r ${prog.colors || defaultColors} group-hover:opacity-80 transition-opacity`}>
           Explore Program <ArrowRight className="ml-2 w-4 h-4 text-current stroke-[3]" />
         </Link>
       </motion.div>
@@ -66,12 +57,17 @@ const ProgramCard = ({ prog, idx }: { prog: any, idx: number }) => {
   );
 };
 
+import { useEffect, useState } from "react";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
 export default function Home() {
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [loadingPrograms, setLoadingPrograms] = useState(true);
   const fadeIn = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
-
   const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
@@ -79,22 +75,22 @@ export default function Home() {
       transition: { staggerChildren: 0.1 }
     }
   };
-
   const headlineWords = ["Shape", "Your", "Future", "at", "Nepal's", "Premier", "Institution."];
-
-  const programs = [
-    { icon: <Building2 />, title: "Engineering & Technology", desc: "Building the future with cutting-edge engineering programs.", colors: "from-indigo-500 to-blue-600" },
-    { icon: <Globe />, title: "Business Management", desc: "Creating global leaders and innovative entrepreneurs.", colors: "from-emerald-500 to-teal-600" },
-    { icon: <HeartPulse />, title: "Medical Sciences", desc: "Advancing healthcare through rigorous medical training.", colors: "from-rose-500 to-pink-600" },
-    { icon: <Scale />, title: "Law & Governance", desc: "Shaping justice and policy for a better society.", colors: "from-amber-500 to-orange-600" },
-    { icon: <Palette />, title: "Humanities & Arts", desc: "Exploring human culture, expression, and critical thought.", colors: "from-purple-500 to-violet-600" },
-    { icon: <Monitor />, title: "Computer Science", desc: "Mastering software, AI, and digital innovation.", colors: "from-cyan-500 to-blue-600" },
-  ];
-
   const particles = Array.from({ length: 12 });
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/programs`)
+      .then((r) => r.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : (data?.programs || []);
+        setPrograms(list);
+      })
+      .finally(() => setLoadingPrograms(false));
+  }, []);
 
   return (
     <PageTransition>
+      <ModelImageModal />
       {/* HERO SECTION */}
       <section className="relative min-h-screen flex items-center pt-20 pb-32 overflow-hidden bg-slate-900">
         {/* Animated Orbs/Blobs */}
@@ -354,15 +350,19 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {programs.map((prog, idx) => (
-              <ProgramCard key={idx} prog={prog} idx={idx} />
+            {loadingPrograms ? (
+              <div className="col-span-3 text-center py-12">Loading programs...</div>
+            ) : programs.length === 0 ? (
+              <div className="col-span-3 text-center py-12 text-slate-400">No programs found.</div>
+            ) : programs.map((prog, idx) => (
+              <ProgramCard key={prog._id || idx} prog={prog} idx={idx} />
             ))}
           </div>
           
           <div className="mt-16 text-center">
             <Link href="/programs">
               <Button variant="outline" size="lg" className="rounded-full px-8 border-2 border-slate-200 hover:border-primary hover:text-primary">
-                View All 50+ Programs
+                View All {programs.length} Programs
               </Button>
             </Link>
           </div>

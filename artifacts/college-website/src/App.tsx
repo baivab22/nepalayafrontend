@@ -83,6 +83,7 @@ function LoadingScreen() {
 function Router() {
   return (
     <Switch>
+      <Route path="/admin/:rest*" component={Admin} />
       <Route path="/admin" component={Admin} />
       <Route>
         <Layout>
