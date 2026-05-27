@@ -6,13 +6,13 @@ export default function ModelImageModal() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetch(`${import.meta.env.VITE_API_BASE_URL ?? ""}/api/model-image`)
+      fetch(`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"}/api/model-image`)
         .then((res) => res.ok ? res.json() : Promise.reject())
         .then((data) => {
           // If the URL is relative, prepend the API base URL
           let url = data.url;
           if (url && !/^https?:\/\//.test(url)) {
-            url = `${import.meta.env.VITE_API_BASE_URL ?? ""}${url}`;
+            url = `${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"}${url}`;
           }
           setImgUrl(url);
         })

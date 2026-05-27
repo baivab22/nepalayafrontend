@@ -303,7 +303,7 @@ export async function customFetch<T = unknown>(
   if (url.startsWith("/api/")) {
     const base = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL
       ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
-      : "";
+      : "http://localhost:8000";
     url = base + url;
   }
   const requestInfo = { method, url };

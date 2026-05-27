@@ -195,7 +195,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const updateStatus = async (id: string, status: Status) => {
     setUpdatingId(id);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? ""}/api/admissions/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"}/api/admissions/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -213,7 +213,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const deleteAdmission = async (id: string) => {
     setDeletingId(id);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? ""}/api/admissions/${id}`, { method: "DELETE" });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"}/api/admissions/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed");
       await queryClient.invalidateQueries({ queryKey: getGetAdmissionsQueryKey() });
       toast({ title: "Deleted", description: "Application removed successfully." });

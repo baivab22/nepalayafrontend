@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 interface NewsItem {
   _id?: string;

@@ -21,7 +21,7 @@ export default function ModelImageUpload({ onUploaded }: { onUploaded?: () => vo
     try {
       const formData = new FormData();
       formData.append("image", file);
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? ""}/api/model-image`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"}/api/model-image`, {
         method: "POST",
         body: formData,
       });

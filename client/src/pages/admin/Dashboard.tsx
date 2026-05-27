@@ -42,7 +42,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 const COLORS = ["#6366f1", "#34d399", "#f59e0b", "#ef4444", "#8b5cf6", "#ec489a"];
 

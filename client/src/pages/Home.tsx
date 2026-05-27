@@ -59,7 +59,7 @@ const ProgramCard = ({ prog, idx }: { prog: any, idx: number }) => {
 
 import { useEffect, useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export default function Home() {
   const [programs, setPrograms] = useState<any[]>([]);
@@ -79,13 +79,25 @@ export default function Home() {
   const particles = Array.from({ length: 12 });
 
   useEffect(() => {
-    fetch(`${API_URL}/api/programs`)
-      .then((r) => r.json())
-      .then((data) => {
+    const loadPrograms = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/programs`);
+        if (!response.ok) {
+          throw new Error(`Failed to load programs: ${response.status}`);
+        }
+
+        const data = await response.json();
         const list = Array.isArray(data) ? data : (data?.programs || []);
         setPrograms(list);
-      })
-      .finally(() => setLoadingPrograms(false));
+      } catch (error) {
+        console.error("Error fetching home programs:", error);
+        setPrograms([]);
+      } finally {
+        setLoadingPrograms(false);
+      }
+    };
+
+    loadPrograms();
   }, []);
 
   return (
