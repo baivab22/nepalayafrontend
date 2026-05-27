@@ -1,0 +1,23 @@
+packages:
+  "framer-motion": "For page transitions, scroll animations, and complex UI micro-interactions"
+  "react-hook-form": "For robust multi-step admission form state management"
+  "@hookform/resolvers": "For Zod validation integration with react-hook-form"
+  "zod": "For strict schema validation on the frontend matching the backend API"
+  "lucide-react": "For beautiful, consistent iconography across the application"
+  "clsx": "For conditional class name merging"
+  "tailwind-merge": "For resolving Tailwind class conflicts"
+
+images:
+  - path: "artifacts/college-website/public/images/hero-campus.png"
+    description: "A wide, dramatic sunset view of a beautiful, prestigious brick-and-stone university campus in Nepal with modern glass elements, lush green lawns, and mountains in the far background. High-end architectural photography style."
+    aspect_ratio: "16:9"
+  - path: "artifacts/college-website/public/images/about-college.png"
+    description: "Diverse group of focused students collaborating around a sleek modern table in a well-lit, high-tech academic library. Premium university lifestyle photography."
+    aspect_ratio: "4:3"
+  - path: "artifacts/college-website/public/images/abstract-mesh.png"
+    description: "Deep indigo, violet, and dark slate abstract gradient mesh background with soft, glowing light leaks. Perfect for dark mode sections."
+    aspect_ratio: "16:9"
+
+notes:
+  - Using generated hooks from @workspace/api-client-react for all API interactions.
+  - Multi-step form relies on react-hook-form tracking state across steps before a single final submit to /api/admissions.
