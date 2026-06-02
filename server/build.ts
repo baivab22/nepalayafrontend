@@ -1,7 +1,8 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import { build as esbuild } from "esbuild";
-import { rm, readFile } from "fs/promises";
+import { cp, mkdir, rm, readFile } from "fs/promises";
+import { spawn } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,9 +34,40 @@ const allowlist = [
   "zod-validation-error",
 ];
 
-async function buildAll() {
+function runCommand(command: string, args: string[], cwd: string) {
+  return new Promise<void>((resolve, reject) => {
+    const proc = spawn(command, args, {
+      cwd,
+      stdio: "inherit",
+      shell: false,
+    });
+
+    proc.on("error", reject);
+    proc.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`${command} ${args.join(" ")} exited with code ${code}`));
+      }
+    });
+  });
+}
+
+async function buildFrontend() {
+  const clientDir = path.resolve(__dirname, "../client");
+  const clientDist = path.resolve(clientDir, "dist/public");
+  const serverPublic = path.resolve(__dirname, "dist/public");
+
+  console.log("building frontend...");
+  await runCommand("npm", ["run", "build"], clientDir);
+  await rm(serverPublic, { recursive: true, force: true });
+  await cp(clientDist, serverPublic, { recursive: true });
+}
+
+async function buildServer() {
   const distDir = path.resolve(__dirname, "dist");
-  await rm(distDir, { recursive: true, force: true });
+  await mkdir(distDir, { recursive: true });
+  await rm(path.resolve(distDir, "index.cjs"), { force: true });
 
   console.log("building server...");
   const pkgPath = path.resolve(__dirname, "package.json");
@@ -63,6 +95,11 @@ async function buildAll() {
     external: externals,
     logLevel: "info",
   });
+}
+
+async function buildAll() {
+  await buildFrontend();
+  await buildServer();
 }
 
 buildAll().catch((err) => {

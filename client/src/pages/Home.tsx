@@ -1,5 +1,7 @@
 import ModelImageModal from "@/components/ModelImageModal";
 import { PageTransition } from "@/components/PageTransition";
+import { Gallery } from "@/components/Gallery";
+import { LocationMap } from "@/components/LocationMap";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { motion, useMotionValue, useTransform } from "framer-motion";
@@ -57,7 +59,100 @@ const ProgramCard = ({ prog, idx }: { prog: any, idx: number }) => {
   );
 };
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { faculty } from "@/lib/data";
+
+const FacultyCard = ({ f, idx }: { f: any, idx: number }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateY = useTransform(x, [-100, 100], [10, -10]);
+  const rotateX = useTransform(y, [-100, 100], [-6, 6]);
+
+  return (
+    <motion.div
+      onMouseMove={e => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        x.set(e.clientX - centerX);
+        y.set(e.clientY - centerY);
+      }}
+      onMouseLeave={() => { x.set(0); y.set(0); }}
+      style={{ rotateX, rotateY }}
+      whileHover={{ scale: 1.04 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      className="bg-white rounded-2xl p-6 shadow-2xl border border-slate-100 w-[300px] h-full flex flex-col items-center text-center"
+    >
+      <div className="w-28 h-28 rounded-full overflow-hidden mb-4 shadow-lg">
+        <img src={f.image} alt={f.name} className="w-full h-full object-cover" />
+      </div>
+      <h3 className="text-lg font-bold text-slate-900">{f.name}</h3>
+      <p className="text-sm text-slate-500 mt-1">{f.designation}</p>
+      <p className="text-xs text-slate-400 mt-2">{f.department}</p>
+      <div className="mt-4 text-sm text-slate-600">{f.education}</div>
+    </motion.div>
+  );
+};
+
+const FacultySlider = () => {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const nodes = Array.from(el.querySelectorAll('.snap-center')) as HTMLElement[];
+
+    const applyTransforms = () => {
+      const rect = el.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      nodes.forEach((node) => {
+        const card = node.firstElementChild as HTMLElement | null;
+        if (!card) return;
+        const r = node.getBoundingClientRect();
+        const cardCenter = r.left + r.width / 2;
+        const offset = (cardCenter - centerX) / rect.width; // approx -0.5..0.5
+        const rotateY = offset * -20; // tilt
+        const translateZ = Math.max(0, 140 - Math.abs(offset) * 260);
+        card.style.transform = `perspective(1200px) translateZ(${translateZ}px) rotateY(${rotateY}deg)`;
+        card.style.transition = 'transform 300ms ease';
+      });
+    };
+
+    applyTransforms();
+    el.addEventListener('scroll', applyTransforms, { passive: true });
+    window.addEventListener('resize', applyTransforms);
+    return () => {
+      el.removeEventListener('scroll', applyTransforms);
+      window.removeEventListener('resize', applyTransforms);
+    };
+  }, []);
+
+  return (
+    <section className="py-24 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-8">
+          <h4 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Faculty</h4>
+          <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900">Meet Our Distinguished Faculty</h2>
+          <p className="text-lg text-slate-600">Experienced educators and researchers driving excellence in teaching and scholarship.</p>
+        </div>
+
+        <div
+          ref={ref}
+          className="relative overflow-x-auto py-6 px-2 will-change-transform"
+          style={{ perspective: 1200 }}
+        >
+          <div className="flex gap-6 items-stretch px-6 snap-x snap-mandatory">
+            {faculty.map((f, i) => (
+              <div key={f.id || i} className="snap-center flex-shrink-0">
+                <FacultyCard f={f} idx={i} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
@@ -161,7 +256,7 @@ export default function Home() {
             <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
               <motion.div variants={fadeIn} className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-400 text-sm font-semibold mb-6">
                 <span className="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse" />
-                Est. 2029 BS (1972 AD)
+                Est. 1984 AD
               </motion.div>
               
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black text-white leading-[1.1] tracking-tight mb-6 flex flex-wrap gap-x-4">
@@ -184,12 +279,7 @@ export default function Home() {
               
               <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4">
                 <Link href="/admissions">
-                  <Button size="lg" className="h-14 px-8 text-lg bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 text-white rounded-full shadow-lg shadow-primary/25 border-0 relative overflow-hidden group">
-                    <motion.div
-                      animate={{ x: ["-100%", "200%"] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
-                      className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
-                    />
+                  <Button size="lg" className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300">
                     <span className="relative flex items-center">
                       Apply Now <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </span>
@@ -220,9 +310,9 @@ export default function Home() {
       <section className="relative z-30 -mt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {[
-            { label: "Students Enrolled", value: 5000, suffix: "+", icon: <Users className="text-primary" /> },
-            { label: "Expert Faculty", value: 200, suffix: "+", icon: <BookOpen className="text-amber-500" /> },
-            { label: "Academic Programs", value: 50, suffix: "+", icon: <Microscope className="text-emerald-500" /> },
+            { label: "Students Enrolled", value: 500, suffix: "+", icon: <Users className="text-primary" /> },
+            { label: "Expert Faculty", value: 20, suffix: "+", icon: <BookOpen className="text-amber-500" /> },
+            { label: "Academic Programs", value: 5, suffix: "+", icon: <Microscope className="text-emerald-500" /> },
             { label: "Placement Rate", value: 98, suffix: "%", icon: <Trophy className="text-rose-500" /> },
           ].map((stat, idx) => (
             <motion.div 
@@ -285,7 +375,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="text-primary font-bold uppercase tracking-widest text-sm mb-3"
               >
-                About TCE
+                About Nepalaya Educational Foundation
               </motion.h4>
               <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
@@ -303,7 +393,7 @@ export default function Home() {
                 transition={{ delay: 0.2 }}
                 className="text-lg text-slate-600 mb-8 leading-relaxed"
               >
-                Founded in 2029 BS, Tribhuvan College of Excellence stands as a beacon of academic brilliance. We are committed to nurturing intellectual curiosity and producing graduates who lead with integrity.
+                Founded in 1984 AD, Nepalaya Educational Foundation stands as a beacon of academic excellence. We are committed to nurturing intellectual curiosity and producing graduates who lead with integrity.
               </motion.p>
               
               <ul className="space-y-4 mb-10">
@@ -381,6 +471,12 @@ export default function Home() {
         </div>
       </motion.section>
 
+      {/* GALLERY SECTION */}
+      <Gallery />
+
+      {/* LOCATION MAP SECTION */}
+      <LocationMap />
+
       {/* CTA SECTION */}
       <motion.section 
         initial={{ opacity: 0, y: 60 }}
@@ -404,7 +500,7 @@ export default function Home() {
               Join thousands of successful alumni. Admissions for the 2081/2082 academic session are now open.
             </p>
             <Link href="/admissions">
-              <Button size="lg" className="h-16 px-10 text-xl bg-white text-slate-900 hover:bg-slate-100 rounded-full shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all hover:scale-105">
+              <Button size="lg" className="h-16 px-10 text-xl bg-white text-blue-600 hover:bg-slate-100 rounded-full shadow-lg transition-all duration-300">
                 Start Application Online
               </Button>
             </Link>

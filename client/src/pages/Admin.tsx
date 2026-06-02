@@ -49,10 +49,11 @@ import AdminFaculty from "./admin/Faculty";
 import AdminNews from "./admin/News";
 import AdminAdmissions from "./admin/Admissions";
 import AdminModelImage from "./admin/ModelImage";
+import AdminGallery from "./admin/Gallery";
 import ModelImageUpload from "@/components/ModelImageUpload";
 
-const ADMIN_PASSWORD = "admin@tce2025";
-const AUTH_KEY = "tce_admin_auth";
+const ADMIN_PASSWORD = "admin@nepalaya2025";
+const AUTH_KEY = "nepalaya_admin_auth";
 
 type Status = "pending" | "accepted" | "rejected";
 
@@ -84,11 +85,11 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8 space-y-6">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white shadow-lg">
-            <GraduationCap className="w-8 h-8" />
+          <div className="w-14 h-14 rounded-3xl overflow-hidden bg-white shadow-xl">
+            <img src="/images/nepalayalogo.jpeg" alt="Nepalaya Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-xl font-bold text-slate-900">Admin Portal</h1>
-          <p className="text-sm text-slate-500">Tribhuvan College of Excellence</p>
+          <p className="text-sm text-slate-500">Nepalaya Educational Foundation</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -432,6 +433,7 @@ export default function Admin() {
     { label: "Programs", path: "/admin/programs" },
     { label: "Faculty", path: "/admin/faculty" },
     { label: "News", path: "/admin/news" },
+    { label: "Gallery", path: "/admin/gallery" },
     { label: "Admissions", path: "/admin/admissions" },
     { label: "Model Image", path: "/admin/model-image" },
   ];
@@ -466,6 +468,7 @@ export default function Admin() {
           <Route path="/admin/programs" component={AdminPrograms} />
           <Route path="/admin/faculty" component={AdminFaculty} />
           <Route path="/admin/news" component={AdminNews} />
+          <Route path="/admin/gallery" component={AdminGallery} />
           <Route path="/admin/admissions" component={AdminAdmissions} />
           <Route path="/admin/model-image" component={AdminModelImage} />
           <Route> <div className="p-8">Not found</div> </Route>

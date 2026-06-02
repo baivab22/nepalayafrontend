@@ -161,9 +161,12 @@ export default function AdminDashboard() {
           className="mb-8"
         >
           <div className="flex justify-between items-center flex-wrap gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">Welcome Back, Admin 👋</h1>
-              <p className="text-slate-500 mt-1">Here's what's happening with your institution today</p>
+            <div className="flex items-center gap-4">
+              <img src="/images/nepalayalogo.jpeg" alt="Nepalaya Logo" className="w-20 h-20 rounded-3xl object-cover shadow-xl" />
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900">Welcome Back, Admin 👋</h1>
+                <p className="text-slate-500 mt-1">Here's what's happening with your institution today</p>
+              </div>
             </div>
             <div className="flex gap-2">
               <Badge variant="outline" className="bg-white">

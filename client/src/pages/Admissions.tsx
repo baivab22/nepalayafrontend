@@ -544,7 +544,7 @@ export default function Admissions() {
                           <Textarea 
                             {...form.register("message")} 
                             className="min-h-[100px] bg-slate-50 border-slate-200 resize-none" 
-                            placeholder="Why do you want to join TCE? Share your goals and aspirations..."
+                            placeholder="Why do you want to join Nepalaya Educational Foundation? Share your goals and aspirations..."
                           />
                         </div>
 
@@ -574,7 +574,7 @@ export default function Admissions() {
                       <Button 
                         type="button" 
                         onClick={nextStep}
-                        className="bg-gradient-to-r from-primary to-sky-500 hover:shadow-lg transition-all"
+                        className="bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-md hover:shadow-lg"
                       >
                         Continue
                         <ChevronRight className="w-4 h-4 ml-2" />
@@ -583,7 +583,7 @@ export default function Admissions() {
                       <Button 
                         type="submit" 
                         disabled={isSubmitting}
-                        className="bg-gradient-to-r from-primary to-sky-500 hover:shadow-lg transition-all min-w-[120px]"
+                        className="bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-md hover:shadow-lg min-w-[120px]"
                       >
                         {isSubmitting ? (
                           <>

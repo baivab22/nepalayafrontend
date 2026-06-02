@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { GraduationCap, MapPin, Phone, Mail, ChevronRight, Menu, X, ArrowUp } from "lucide-react";
+import { GraduationCap, MapPin, Phone, Mail, ChevronRight, Menu, X, ArrowUp, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,6 +28,26 @@ export function Layout({ children }: { children: ReactNode }) {
     { name: "Contact", path: "/contact" },
   ];
 
+  const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+  const [programsList, setProgramsList] = useState<any[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetch(`${API_URL}/api/programs`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!mounted) return;
+        const raw = Array.isArray(data) ? data : data?.programs || [];
+        setProgramsList(raw.slice(0, 6));
+      })
+      .catch(() => {
+        // leave programsList empty on failure
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -39,18 +59,27 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="flex items-center space-x-6">
           <span className="flex items-center text-amber-400 font-medium">
             <span className="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse"></span>
-            Admission Open 2081 BS
+            Admission Open 2083 BS
           </span>
           <span className="flex items-center text-slate-300">
-            <MapPin className="w-3 h-3 mr-1" /> Pulchowk Campus, Lalitpur
+            <MapPin className="w-3 h-3 mr-1" /> Kalanki 14, Kathmandu
           </span>
         </div>
         <div className="flex items-center space-x-6">
-          <a href="tel:+977015524890" className="flex items-center hover:text-amber-400 transition-colors">
-            <Phone className="w-3 h-3 mr-1" /> +977-01-5524890
+          <a href="tel:+9779761522442" className="flex items-center hover:text-amber-400 transition-colors">
+            <Phone className="w-3 h-3 mr-1" /> +977-9761522442
           </a>
-          <a href="mailto:info@tce.edu.np" className="flex items-center hover:text-amber-400 transition-colors">
-            <Mail className="w-3 h-3 mr-1" /> info@tce.edu.np
+          <a href="mailto:info@nepalayaedufoundation.edu.np" className="flex items-center hover:text-amber-400 transition-colors">
+            <Mail className="w-3 h-3 mr-1" /> info@nepalayaedufoundation.edu.np
+          </a>
+          <a 
+            href="https://www.facebook.com/profile.php?id=61584645043722" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center hover:text-blue-400 transition-colors"
+            title="Visit our Facebook page"
+          >
+            <Facebook className="w-3 h-3 mr-1" /> Facebook
           </a>
         </div>
       </div>
@@ -65,19 +94,20 @@ export function Layout({ children }: { children: ReactNode }) {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2 group">
-            <motion.div 
+          <Link href="/" className="flex items-center group">
+            <motion.div
               initial={{ scale: 1 }}
-              animate={{ scale: [1, 1.05, 1] }}
+              animate={{ scale: [1, 1.08, 1] }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform"
+              className="w-14 h-14 overflow-visible transition-transform flex-shrink-0 rounded-md"
+              style={{ willChange: "transform" }}
             >
-              <GraduationCap className="w-6 h-6" />
+              <img
+                src="/images/nepalayalogo.jpeg"
+                alt="Nepalaya Logo"
+                className="w-full h-full object-contain transform scale-125 shadow-lg"
+              />
             </motion.div>
-            <div className="flex flex-col">
-              <span className="text-xl font-display font-black text-slate-900 leading-none tracking-tight">Tribhuvan</span>
-              <span className="text-[10px] font-semibold tracking-widest text-primary uppercase">College of Excellence</span>
-            </div>
           </Link>
 
           {/* Desktop Nav */}
@@ -88,12 +118,12 @@ export function Layout({ children }: { children: ReactNode }) {
                 href={link.path}
                 className="group relative"
               >
-                <span className={`text-sm font-medium transition-colors group-hover:text-primary ${
-                  location === link.path ? "text-primary" : "text-slate-600"
+                <span className={`text-sm font-medium transition-colors group-hover:text-blue-600 ${
+                  location === link.path ? "text-blue-600" : "text-slate-600"
                 }`}>
                   {link.name}
                 </span>
-                <span className={`absolute -bottom-1 left-0 w-full h-0.5 bg-primary origin-left transition-transform duration-300 ease-out ${
+                <span className={`absolute -bottom-1 left-0 w-full h-0.5 bg-blue-600 origin-left transition-transform duration-300 ease-out ${
                   location === link.path ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                 }`} />
               </Link>
@@ -161,12 +191,12 @@ export function Layout({ children }: { children: ReactNode }) {
                   <GraduationCap className="w-6 h-6" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xl font-display font-black text-white leading-none">Tribhuvan</span>
-                  <span className="text-[10px] font-semibold tracking-widest text-primary-foreground/70 uppercase">College of Excellence</span>
+                  <span className="text-xl font-display font-black text-white leading-none">Nepalaya</span>
+                  <span className="text-[10px] font-semibold tracking-widest text-primary-foreground/70 uppercase">Educational Foundation</span>
                 </div>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
-                Nepal's premier educational institution, blending rich cultural heritage with cutting-edge academic excellence since 2029 BS.
+                Nepal's premier educational institution, blending rich cultural heritage with cutting-edge academic excellence since 1984 AD.
               </p>
             </div>
 
@@ -184,14 +214,20 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
 
             <div>
-              <h4 className="text-white font-display font-bold mb-6 text-lg">Programs</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="/programs" className="hover:text-amber-400 transition-colors">Engineering & Tech</Link></li>
-                <li><Link href="/programs" className="hover:text-amber-400 transition-colors">Business Management</Link></li>
-                <li><Link href="/programs" className="hover:text-amber-400 transition-colors">Medical Sciences</Link></li>
-                <li><Link href="/programs" className="hover:text-amber-400 transition-colors">Law & Governance</Link></li>
-                <li><Link href="/programs" className="hover:text-amber-400 transition-colors">Humanities & Arts</Link></li>
-              </ul>
+                <h4 className="text-white font-display font-bold mb-6 text-lg">Programs</h4>
+                <ul className="space-y-3 text-sm">
+                  {programsList.length === 0 ? (
+                    <li className="text-slate-400">Loading programs…</li>
+                  ) : (
+                    programsList.map((p: any) => (
+                      <li key={p._id}>
+                        <Link href="/programs" className="hover:text-amber-400 transition-colors">
+                          {p.title}
+                        </Link>
+                      </li>
+                    ))
+                  )}
+                </ul>
             </div>
 
             <div>
@@ -199,22 +235,26 @@ export function Layout({ children }: { children: ReactNode }) {
               <ul className="space-y-4 text-sm">
                 <li className="flex items-start">
                   <MapPin className="w-5 h-5 mr-3 text-primary shrink-0 mt-0.5" />
-                  <span>Pulchowk Campus Road,<br/>Lalitpur 44700, Kathmandu Valley,<br/>Nepal</span>
+                  <span>Kalanki 14, Kathmandu 44600<br/>Kathmandu, Nepal</span>
                 </li>
                 <li className="flex items-center">
                   <Phone className="w-5 h-5 mr-3 text-primary shrink-0" />
-                  <span>+977-01-5524890</span>
+                  <span>+977-9761522442</span>
                 </li>
                 <li className="flex items-center">
                   <Mail className="w-5 h-5 mr-3 text-primary shrink-0" />
-                  <span>info@tce.edu.np</span>
+                  <span>info@nepalayaedufoundation.edu.np</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="w-5 h-5 mr-3 text-primary shrink-0 mt-0.5">🕒</span>
+                  <span>Office Hours: Sun–Fri 6:00 AM – 5:00 PM</span>
                 </li>
               </ul>
             </div>
           </div>
           
           <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
-            <p>© {new Date().getFullYear()} Tribhuvan College of Excellence. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Nepalaya Educational Foundation. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>

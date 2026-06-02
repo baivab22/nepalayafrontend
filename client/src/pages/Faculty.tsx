@@ -373,7 +373,7 @@
 //                       {/* Contact Button */}
 //                       <div className="flex justify-center gap-2 pt-2 border-t border-slate-100">
 //                         <a 
-//                           href={`mailto:${fac.email || "info@tce.edu.np"}`}
+//                           href={`mailto:${fac.email || "info@nepalayaedufoundation.edu.np"}`}
 //                           className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-slate-50 text-slate-600 hover:bg-primary hover:text-white transition-all duration-300 text-sm"
 //                         >
 //                           <Mail className="w-4 h-4" />
@@ -772,11 +772,11 @@ export default function Faculty() {
                       <h3 className="text-lg font-semibold text-slate-900 mb-3">Contact Information</h3>
                       <div className="space-y-2">
                         <a 
-                          href={`mailto:${selectedFaculty.email || "info@tce.edu.np"}`}
+                          href={`mailto:${selectedFaculty.email || "info@nepalayaedufoundation.edu.np"}`}
                           className="flex items-center gap-3 text-slate-600 hover:text-primary transition-colors"
                         >
                           <Mail className="w-5 h-5" />
-                          <span>{selectedFaculty.email || "info@tce.edu.np"}</span>
+                          <span>{selectedFaculty.email || "info@nepalayaedufoundation.edu.np"}</span>
                         </a>
                         {selectedFaculty.phone && (
                           <div className="flex items-center gap-3 text-slate-600">
@@ -837,7 +837,7 @@ export default function Faculty() {
                   Close
                 </Button>
                 <a 
-                  href={`mailto:${selectedFaculty.email || "info@tce.edu.np"}`}
+                  href={`mailto:${selectedFaculty.email || "info@nepalayaedufoundation.edu.np"}`}
                   className="inline-flex"
                 >
                   <Button className="bg-gradient-to-r from-primary to-sky-500 hover:from-primary/90 hover:to-sky-500/90">

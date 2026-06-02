@@ -25,15 +25,17 @@ export default function ModelImageModal() {
   if (!show || !imgUrl) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-2xl shadow-xl p-6 max-w-xs w-full relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6 sm:px-8 sm:py-10">
+      <div className="bg-white rounded-[2rem] shadow-2xl p-4 sm:p-6 max-w-5xl w-full relative">
         <button
-          className="absolute top-2 right-2 text-slate-500 hover:text-slate-900"
+          className="absolute top-4 right-4 text-slate-500 hover:text-slate-900 bg-white/80 rounded-full w-10 h-10 flex items-center justify-center shadow-sm"
           onClick={() => setShow(false)}
         >
           ×
         </button>
-        <img src={imgUrl} alt="Model" className="w-full h-auto rounded-xl" />
+        <div className="rounded-[1.5rem] bg-slate-100 overflow-auto">
+          <img src={imgUrl} alt="Model" className="mx-auto max-w-full max-h-[90vh] object-contain" />
+        </div>
       </div>
     </div>
   );

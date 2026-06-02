@@ -6,6 +6,7 @@ import programsRouter from "./programs";
 import facultyRouter from "./faculty";
 import newsRouter from "./news";
 import adminRouter from "./admin";
+import galleryRouter from "./gallery";
 
 const router: IRouter = Router();
 router.use(healthRouter);
@@ -15,5 +16,6 @@ router.use(programsRouter);
 router.use(facultyRouter);
 router.use(newsRouter);
 router.use(adminRouter);
+router.use("/gallery", galleryRouter);
 
 export default router;

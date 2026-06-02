@@ -32,7 +32,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 mb-1">Campus Address</h4>
-                      <p className="text-slate-600 text-sm">Pulchowk Campus Road,<br/>Lalitpur 44700,<br/>Kathmandu Valley, Nepal</p>
+                      <p className="text-slate-600 text-sm">Kalanki 14, Kathmandu 44600,<br/>Kathmandu, Nepal</p>
                     </div>
                   </div>
 
@@ -42,7 +42,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 mb-1">Phone</h4>
-                      <p className="text-slate-600 text-sm">+977-01-5524890<br/>+977-01-5524891</p>
+                      <p className="text-slate-600 text-sm">+977-9761522442</p>
                     </div>
                   </div>
 
@@ -52,7 +52,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 mb-1">Email</h4>
-                      <p className="text-slate-600 text-sm">info@tce.edu.np<br/>admissions@tce.edu.np</p>
+                      <p className="text-slate-600 text-sm">info@nepalayaedufoundation.edu.np<br/>admissions@nepalayaedufoundation.edu.np</p>
                     </div>
                   </div>
 

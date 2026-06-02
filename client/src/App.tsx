@@ -23,7 +23,7 @@ function LoadingScreen() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const hasLoaded = sessionStorage.getItem("tce_loaded");
+    const hasLoaded = sessionStorage.getItem("nepalaya_loaded");
     if (hasLoaded) {
       setIsVisible(false);
       return;
@@ -31,7 +31,7 @@ function LoadingScreen() {
 
     const timer = setTimeout(() => {
       setIsVisible(false);
-      sessionStorage.setItem("tce_loaded", "true");
+      sessionStorage.setItem("nepalaya_loaded", "true");
     }, 1500);
 
     return () => clearTimeout(timer);
@@ -62,7 +62,7 @@ function LoadingScreen() {
               transition={{ delay: 0.2 }}
               className="text-white font-display font-bold text-xl md:text-2xl mb-8"
             >
-              Tribhuvan College of Excellence
+      Nepalaya Education Foundation
             </motion.h2>
 
             <div className="w-64 h-1 bg-slate-800 rounded-full overflow-hidden">

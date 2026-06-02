@@ -1,15 +1,15 @@
 // Static data for the frontend
 
 export const siteConfig = {
-  name: "Tribhuvan College of Excellence",
-  shortName: "TCE",
-  tagline: "Excellence in Education Since 1972 BS",
+  name: "Nepalaya Educational Foundation",
+  shortName: "Nepalaya",
+  tagline: "Excellence in Education Since 1984 AD",
   description: "Nepal's premier institution fostering global leaders through innovative education and rich cultural heritage.",
   contact: {
-    address: "Pulchowk Campus Road, Lalitpur 44700",
-    city: "Kathmandu Valley, Nepal",
-    phone: "+977-01-5524890",
-    email: "info@tribhuvancollege.edu.np"
+    address: "Kalanki 14, Kathmandu 44600",
+    city: "Kathmandu, Nepal",
+    phone: "+977-9761522442",
+    email: "info@nepalayaedufoundation.edu.np"
   },
   social: {
     facebook: "https://facebook.com",
@@ -124,10 +124,10 @@ export const faculty = [
 export const news = [
   {
     id: "n1",
-    title: "TCE Hosts International Tech Symposium 2025",
+    title: "Nepalaya Hosts International Tech Symposium 2025",
     date: "15 Mangsir 2081",
     category: "Events",
-    summary: "Over 500 delegates from across Asia gathered at our Pulchowk campus for the annual technology innovation symposium.",
+    summary: "Over 500 delegates from across Asia gathered at our Kalanki 14 campus for the annual technology innovation symposium.",
     image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=800"
   },
   {
