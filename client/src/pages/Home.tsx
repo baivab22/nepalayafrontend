@@ -4,10 +4,10 @@ import { Gallery } from "@/components/Gallery";
 import { LocationMap } from "@/components/LocationMap";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
 import { 
   ArrowRight, BookOpen, Users, Trophy, ChevronDown,
-  Microscope
+  Microscope, ChevronLeft, ChevronRight, X
 } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
@@ -59,7 +59,7 @@ const ProgramCard = ({ prog, idx }: { prog: any, idx: number }) => {
   );
 };
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { faculty } from "@/lib/data";
 
 const FacultyCard = ({ f, idx }: { f: any, idx: number }) => {
@@ -94,62 +94,290 @@ const FacultyCard = ({ f, idx }: { f: any, idx: number }) => {
   );
 };
 
-const FacultySlider = () => {
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const nodes = Array.from(el.querySelectorAll('.snap-center')) as HTMLElement[];
-
-    const applyTransforms = () => {
-      const rect = el.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      nodes.forEach((node) => {
-        const card = node.firstElementChild as HTMLElement | null;
-        if (!card) return;
-        const r = node.getBoundingClientRect();
-        const cardCenter = r.left + r.width / 2;
-        const offset = (cardCenter - centerX) / rect.width; // approx -0.5..0.5
-        const rotateY = offset * -20; // tilt
-        const translateZ = Math.max(0, 140 - Math.abs(offset) * 260);
-        card.style.transform = `perspective(1200px) translateZ(${translateZ}px) rotateY(${rotateY}deg)`;
-        card.style.transition = 'transform 300ms ease';
-      });
-    };
-
-    applyTransforms();
-    el.addEventListener('scroll', applyTransforms, { passive: true });
-    window.addEventListener('resize', applyTransforms);
-    return () => {
-      el.removeEventListener('scroll', applyTransforms);
-      window.removeEventListener('resize', applyTransforms);
-    };
-  }, []);
+const FacultyDetailModal = ({ faculty, open, onClose }: { faculty: any | null; open: boolean; onClose: () => void }) => {
+  if (!open || !faculty) return null;
 
   return (
-    <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-8">
-          <h4 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Faculty</h4>
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900">Meet Our Distinguished Faculty</h2>
-          <p className="text-lg text-slate-600">Experienced educators and researchers driving excellence in teaching and scholarship.</p>
-        </div>
-
-        <div
-          ref={ref}
-          className="relative overflow-x-auto py-6 px-2 will-change-transform"
-          style={{ perspective: 1200 }}
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4"
+      >
+        <motion.div
+          initial={{ y: 24, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 24, opacity: 0 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-3xl overflow-hidden rounded-[32px] bg-white shadow-2xl"
         >
-          <div className="flex gap-6 items-stretch px-6 snap-x snap-mandatory">
-            {faculty.map((f, i) => (
-              <div key={f.id || i} className="snap-center flex-shrink-0">
-                <FacultyCard f={f} idx={i} />
-              </div>
-            ))}
+          <div className="relative">
+            <img src={faculty.image} alt={faculty.name} className="h-80 w-full object-cover" />
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-lg hover:bg-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-        </div>
-      </div>
+          <div className="p-8">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-3xl font-bold text-slate-900">{faculty.name}</h3>
+                <p className="text-sm uppercase tracking-[0.24em] text-primary mt-2">{faculty.designation}</p>
+              </div>
+              <div className="rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700">
+                {faculty.department}
+              </div>
+            </div>
+            <p className="mt-6 text-slate-600 text-base leading-8">
+              {faculty.name} brings a wealth of experience in {faculty.department.toLowerCase()} education. With a strong academic background and a student-first approach, they help learners gain practical knowledge and confidence.
+            </p>
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="rounded-3xl bg-slate-50 p-5">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Education</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">{faculty.education}</p>
+              </div>
+              <div className="rounded-3xl bg-slate-50 p-5">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Role</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">{faculty.designation}</p>
+              </div>
+            </div>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-3xl bg-slate-50 p-5">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Expertise</p>
+                <p className="mt-2 text-base text-slate-700">Student mentorship, research guidance, curriculum development.</p>
+              </div>
+              <div className="rounded-3xl bg-slate-50 p-5">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Student Impact</p>
+                <p className="mt-2 text-base text-slate-700">Committed to career-ready instruction and high student engagement.</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+const FacultySlider = () => {
+  const sliderRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [selectedFaculty, setSelectedFaculty] = useState<any | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const intervalRef = useRef<number | null>(null);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+
+  const totalSlides = faculty.length;
+  // Triple the array for infinite scroll
+  const extendedFaculty = [...faculty];
+  const middleIndex = totalSlides;
+
+  const scrollToIndex = useCallback((index: number, smooth: boolean = true) => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    const items = container.querySelectorAll('.slide-item');
+    const targetItem = items[index];
+    if (!targetItem) return;
+
+    targetItem.scrollIntoView({
+      behavior: smooth ? 'smooth' : 'auto',
+      inline: 'center',
+      block: 'nearest'
+    });
+  }, []);
+
+  const goToSlide = useCallback((index: number) => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    
+    const targetIndex = index + middleIndex;
+    setActiveIndex(index);
+    scrollToIndex(targetIndex);
+    
+    setTimeout(() => setIsTransitioning(false), 500);
+  }, [scrollToIndex, middleIndex, isTransitioning]);
+
+  const goNext = useCallback(() => {
+    if (isTransitioning) return;
+    const nextIndex = (activeIndex + 1) % totalSlides;
+    goToSlide(nextIndex);
+  }, [activeIndex, totalSlides, goToSlide, isTransitioning]);
+
+  const goPrev = useCallback(() => {
+    if (isTransitioning) return;
+    const prevIndex = (activeIndex - 1 + totalSlides) % totalSlides;
+    goToSlide(prevIndex);
+  }, [activeIndex, totalSlides, goToSlide, isTransitioning]);
+
+  const applyTransforms = useCallback(() => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const items = container.querySelectorAll('.slide-item');
+
+    items.forEach((node) => {
+      const card = node.firstElementChild as HTMLElement | null;
+      if (!card) return;
+
+      const r = node.getBoundingClientRect();
+      const cardCenter = r.left + r.width / 2;
+      const offset = (cardCenter - centerX) / rect.width;
+      
+      // Fade out items that are too far
+      const absOffset = Math.abs(offset);
+      if (absOffset > 0.9) {
+        card.style.opacity = '0.2';
+        card.style.transform = 'perspective(1200px) translateZ(0px) rotateY(0deg) scale(0.8)';
+        card.style.filter = 'drop-shadow(0 8px 16px rgba(15, 23, 42, 0.05))';
+        card.style.pointerEvents = 'none';
+        return;
+      }
+
+      card.style.pointerEvents = 'auto';
+      card.style.opacity = '1';
+      
+      const rotateY = offset * -30;
+      const translateZ = Math.max(0, 150 - absOffset * 300);
+      const scale = 1 - Math.min(0.15, absOffset * 0.15);
+      
+      card.style.transform = `perspective(1200px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+      card.style.transition = 'transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 500ms ease, opacity 500ms ease';
+      
+      const isCenter = absOffset < 0.05;
+      card.style.filter = isCenter 
+        ? 'drop-shadow(0 25px 50px rgba(15, 23, 42, 0.2))'
+        : 'drop-shadow(0 10px 20px rgba(15, 23, 42, 0.08))';
+    });
+  }, []);
+
+  // Handle scroll events and infinite loop
+  useEffect(() => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    let scrollTimeout: number;
+
+    const handleScroll = () => {
+      applyTransforms();
+      
+      clearTimeout(scrollTimeout);
+      scrollTimeout = window.setTimeout(() => {
+        const scrollLeft = container.scrollLeft;
+        const scrollWidth = container.scrollWidth;
+        const clientWidth = container.clientWidth;
+        
+        // Check if we need to loop
+        if (scrollLeft >= scrollWidth - clientWidth - 10) {
+          // Reached end, jump to beginning of middle set
+          const targetIndex = middleIndex;
+          const items = container.querySelectorAll('.slide-item');
+          const targetItem = items[targetIndex];
+          if (targetItem) {
+            targetItem.scrollIntoView({ inline: 'center', behavior: 'auto' });
+          }
+        } else if (scrollLeft <= 10) {
+          // Reached beginning, jump to end of middle set
+          const targetIndex = middleIndex + totalSlides - 1;
+          const items = container.querySelectorAll('.slide-item');
+          const targetItem = items[targetIndex];
+          if (targetItem) {
+            targetItem.scrollIntoView({ inline: 'center', behavior: 'auto' });
+          }
+        }
+      }, 100);
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', applyTransforms);
+
+    // Initial setup
+    setTimeout(() => {
+      applyTransforms();
+      const items = container.querySelectorAll('.slide-item');
+      const targetItem = items[middleIndex];
+      if (targetItem) {
+        targetItem.scrollIntoView({ inline: 'center', behavior: 'auto' });
+      }
+    }, 100);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', applyTransforms);
+      clearTimeout(scrollTimeout);
+    };
+  }, [applyTransforms, middleIndex, totalSlides]);
+
+  // Auto-play with hover pause
+  useEffect(() => {
+    if (isHovered || isTransitioning) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      intervalRef.current = window.setInterval(goNext, 4000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isHovered, goNext, isTransitioning]);
+
+  // Touch events for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    touchEndX.current = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        goNext();
+      } else {
+        goPrev();
+      }
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowLeft') goPrev();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goNext, goPrev]);
+
+  return (
+    <section 
+      className="py-24 bg-gradient-to-b from-slate-50 to-white overflow-hidden"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <FacultyDetailModal 
+        faculty={selectedFaculty} 
+        open={!!selectedFaculty} 
+        onClose={() => setSelectedFaculty(null)} 
+      />
+      
+
     </section>
   );
 };
@@ -473,6 +701,9 @@ export default function Home() {
 
       {/* GALLERY SECTION */}
       <Gallery />
+
+      {/* FACULTY SECTION */}
+      <FacultySlider />
 
       {/* LOCATION MAP SECTION */}
       <LocationMap />

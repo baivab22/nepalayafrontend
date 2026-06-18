@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+dist
+.git
+.env
+.env.local
+.env.production
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo
+coverage
+.turbo

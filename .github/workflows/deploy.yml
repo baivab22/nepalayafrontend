@@ -1,0 +1,82 @@
+name: Build and Deploy to Production
+
+on:
+  push:
+    branches: [main, production]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # Build Server
+      - name: Build Server
+        run: |
+          cd server
+          npm ci
+          npm run build
+
+      # Build Client
+      - name: Build Client
+        run: |
+          cd client
+          npm ci
+          npm run build
+
+      # Type Check
+      - name: TypeScript Check
+        run: |
+          cd server
+          npm run typecheck
+
+      # Upload artifacts for deployment
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            server/dist
+            server/package*.json
+            client/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production')
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        run: |
+          npm install -g heroku
+          heroku container:login
+          heroku container:push web -a $HEROKU_APP_NAME
+          heroku container:release web -a $HEROKU_APP_NAME
+
+      # Alternative: Deploy to AWS (uncomment if using AWS)
+      # - name: Deploy to AWS
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #   run: |
+      #     # Add AWS deployment script here
+
+      - name: Deployment Status
+        run: echo "✅ Deployment completed successfully!"
