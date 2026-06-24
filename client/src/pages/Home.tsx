@@ -4,126 +4,16 @@ import { PageTransition } from "@/components/PageTransition";
 import { Gallery } from "@/components/Gallery";
 import { LocationMap } from "@/components/LocationMap";
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import FacultyCard from "@/components/FacultyCard";
+import ProgramSlider from "@/components/ProgramSlider";
+import NewsSlider from "@/components/NewsSlider";
 import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { 
-  ArrowRight, BookOpen, GraduationCap, Users, Trophy, Clock, ChevronRight,
-  Microscope, X, Calendar, Share2
+  ArrowRight, BookOpen, Users, Trophy, ChevronRight,
+  Microscope, X,
 } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-
-const ProgramCard = ({ prog, idx }: { prog: any, idx: number }) => {
-  const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
-  const [, navigate] = useLocation();
-  const items = Array.isArray(prog.items) ? prog.items : prog.description ? String(prog.description).split(",").map((s: string) => s.trim()).filter(Boolean) : [];
-  const duration = prog.duration || "4 Years";
-  const seats = prog.seats || 60;
-  const level = prog.level || "Bachelor";
-
-  const handleNav = () => navigate(`/programs/${prog._id}`);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: idx * 0.15 }}
-    >
-      <div
-        onClick={handleNav}
-        className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200/60 overflow-hidden h-full flex flex-col cursor-pointer"
-      >
-        {/* Image */}
-        <div className={`relative w-full h-48 overflow-hidden ${!prog.image ? "bg-gradient-to-br from-slate-100 to-slate-200" : "bg-slate-100"}`}>
-          {prog.image ? (
-            <img
-              src={`${API_URL}${prog.image}`}
-              alt={prog.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <GraduationCap className="w-14 h-14 text-slate-300" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="absolute top-3 right-3">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0">
-              {level}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-5 flex-1 flex flex-col">
-          <h3 className="font-bold text-lg text-slate-900 mb-3 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-            {prog.title}
-          </h3>
-
-          {/* Items as tags */}
-          <div className="flex-1 mb-4">
-            <div className="flex flex-wrap gap-1.5">
-              {items.length > 0 ? (
-                items.slice(0, 4).map((item: string, i: number) => (
-                  <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-50 text-slate-600 text-xs font-medium border border-slate-200/60">
-                    {item}
-                  </span>
-                ))
-              ) : (
-                <span className="text-xs text-slate-400 italic">Coming soon</span>
-              )}
-              {items.length > 4 && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium text-primary bg-primary/5 border border-primary/20">
-                  +{items.length - 4}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Meta */}
-          <div className="flex items-center gap-3 pt-4 mt-auto border-t border-slate-100">
-            <div className="flex items-center gap-1 text-xs text-slate-400">
-              <Clock className="w-3 h-3" />
-              {duration}
-            </div>
-            <div className="flex items-center gap-1 text-xs text-slate-400">
-              <Users className="w-3 h-3" />
-              {seats} seats
-            </div>
-            <div className="ml-auto">
-              <span className="inline-flex items-center gap-1 text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
-                <BookOpen className="w-3 h-3" />
-                {items.length}
-              </span>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => { e.stopPropagation(); navigate(`/programs/${prog._id}`); }}
-              className="flex-1 border-slate-200 hover:border-primary hover:text-primary text-slate-600"
-            >
-              <BookOpen className="w-3.5 h-3.5 mr-1" />
-              Details
-            </Button>
-            <Link href="/admissions" className="flex-1" onClick={(e) => e.stopPropagation()}>
-              <Button size="sm" className="w-full bg-slate-900 text-white hover:bg-slate-800">
-                <ArrowRight className="w-3.5 h-3.5 mr-1" />
-                Apply
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
 
 import { useEffect, useState, useRef } from "react";
 
@@ -207,13 +97,6 @@ const getPhotoUrl = (photo: string) => {
   if (photo.startsWith("http://") || photo.startsWith("https://")) return photo;
   if (photo.startsWith("/api/")) return `${API_URL}${photo}`;
   return `${API_URL}/api/faculty/photo/${photo}`;
-};
-
-const getImageUrl = (image?: string) => {
-  if (!image) return "";
-  if (image.startsWith("http://") || image.startsWith("https://")) return image;
-  if (image.startsWith("/api/")) return `${API_URL}${image}`;
-  return `${API_URL}/api/news/image/${image}`;
 };
 
 const FacultySlider = () => {
@@ -327,22 +210,9 @@ const FacultySlider = () => {
   );
 };
 
-const formatDisplayDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    return format(date, "MMM dd, yyyy");
-  } catch {
-    return dateString;
-  }
-};
+
 
 export default function Home() {
-  const [programs, setPrograms] = useState<any[]>([]);
-  const [loadingPrograms, setLoadingPrograms] = useState(true);
-  const [news, setNews] = useState<any[]>([]);
-  const [loadingNews, setLoadingNews] = useState(true);
-  const { toast } = useToast();
-
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 700], [0, 160]);
   const heroContentY = useTransform(scrollY, [0, 700], [0, -40]);
@@ -364,34 +234,6 @@ export default function Home() {
   const aboutImgY2 = useTransform(aboutProgress2, [0, 1], [-100, 100]);
   const smoothAboutImgY2 = useSpring(aboutImgY2, { stiffness: 80, damping: 25, mass: 0.5 });
 
-  const handleCardShare = async (e: React.MouseEvent, newsId?: string, title?: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!newsId) return;
-    const shareUrl = `${window.location.origin}/news/${newsId}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: title || "Nepalaya News",
-          url: shareUrl,
-        });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        toast({
-          title: "Link Copied!",
-          description: "News link copied to clipboard.",
-        });
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name !== "AbortError") {
-        await navigator.clipboard.writeText(shareUrl);
-        toast({
-          title: "Link Copied!",
-          description: "News link copied to clipboard.",
-        });
-      }
-    }
-  };
   const [slides, setSlides] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slidesLoaded, setSlidesLoaded] = useState(false);
@@ -445,46 +287,6 @@ export default function Home() {
   const nextSlide = () => {
     goToSlide((currentSlide + 1) % slides.length);
   };
-
-  useEffect(() => {
-    const loadPrograms = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/programs`);
-        if (!response.ok) {
-          throw new Error(`Failed to load programs: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const list = Array.isArray(data) ? data : (data?.programs || []);
-        setPrograms(list);
-      } catch (error) {
-        console.error("Error fetching home programs:", error);
-        setPrograms([]);
-      } finally {
-        setLoadingPrograms(false);
-      }
-    };
-
-    const loadNews = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/news`);
-        if (!response.ok) {
-          throw new Error(`Failed to load news: ${response.status}`);
-        }
-        const data = await response.json();
-        const list = Array.isArray(data) ? data : (data?.news || []);
-        setNews(list.slice(0, 4));
-      } catch (error) {
-        console.error("Error fetching home news:", error);
-        setNews([]);
-      } finally {
-        setLoadingNews(false);
-      }
-    };
-
-    loadPrograms();
-    loadNews();
-  }, []);
 
   return (
     <PageTransition>
@@ -850,40 +652,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* PROGRAMS SECTION */}
-      <motion.section 
-        initial={{ opacity: 0, y: 60 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="pb-10 pt-16 bg-slate-50 relative"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h4 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Academics</h4>
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6">Our Diverse Programs</h2>
-            <p className="text-lg text-slate-600">Choose from a wide array of undergraduate and postgraduate programs designed to meet global standards and industry needs.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {loadingPrograms ? (
-              <div className="col-span-3 text-center py-12">Loading programs...</div>
-            ) : programs.length === 0 ? (
-              <div className="col-span-3 text-center py-12 text-slate-400">No programs found.</div>
-            ) : programs.map((prog, idx) => (
-              <ProgramCard key={prog._id || idx} prog={prog} idx={idx} />
-            ))}
-          </div>
-          
-          <div className="mt-12 text-center">
-            <Link href="/programs">
-              <Button variant="outline" size="lg" className="rounded-full px-8 border-2 border-slate-200 hover:border-primary hover:text-primary">
-                View All {programs.length} Programs
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </motion.section>
+      <ProgramSlider />
 
       {/* GALLERY SECTION */}
       <Gallery />
@@ -891,127 +660,7 @@ export default function Home() {
       {/* FACULTY SECTION */}
       <FacultySlider />
 
-      {/* LATEST NEWS SECTION */}
-   {/* LATEST NEWS SECTION */}
-<motion.section 
-  initial={{ opacity: 0, y: 60 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true, margin: "-100px" }}
-  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-  className="py-16 bg-white relative"
->
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-      <div>
-        <h4 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Updates</h4>
-        <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight">Latest News & Events</h2>
-        <p className="text-lg text-slate-600 mt-2">Stay informed with the latest updates, announcements, and key events from our campus.</p>
-      </div>
-      <Link href="/news">
-        <Button variant="outline" size="lg" className="rounded-full px-8 border-2 border-slate-200 hover:border-primary hover:text-primary whitespace-nowrap">
-          View All News <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
-      </Link>
-    </div>
-
-    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {loadingNews ? (
-        Array.from({ length: 4 }).map((_, idx) => (
-          <div key={idx} className="space-y-4">
-            <div className="h-48 bg-slate-100 rounded-2xl animate-pulse" />
-            <div className="h-6 bg-slate-100 rounded animate-pulse w-3/4" />
-            <div className="h-4 bg-slate-100 rounded animate-pulse w-1/2" />
-          </div>
-        ))
-      ) : news.length === 0 ? (
-        <div className="col-span-full text-center py-12 text-slate-400 font-sans">No news found.</div>
-      ) : (
-        news.map((item, idx) => (
-          <Link key={item._id || idx} href={`/news/${item._id}`}>
-            <motion.div 
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="group cursor-pointer h-full"
-            >
-              <div className="bg-white rounded-2xl overflow-hidden h-full flex flex-col border border-slate-200/60 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500">
-                {/* Image Container */}
-                <div className="relative h-52 overflow-hidden bg-slate-100">
-                  {item.image ? (
-                    <img
-                      src={getImageUrl(item.image)}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm bg-gradient-to-br from-slate-50 to-slate-100">
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="w-12 h-12 rounded-full bg-slate-200/50 flex items-center justify-center">
-                          <Calendar className="w-6 h-6 text-slate-400" />
-                        </div>
-                        <span>Image coming soon</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Category Badge - Top Left */}
-                  <div className="absolute top-4 left-4">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/95 backdrop-blur-sm text-slate-800 shadow-sm border border-slate-200/50">
-                      {item.category || "News"}
-                    </span>
-                  </div>
-                  
-                  {/* Date Badge - Bottom Left */}
-                  <div className="absolute bottom-4 left-4">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-medium">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {formatDisplayDate(item.date)}
-                    </span>
-                  </div>
-                  
-                  {/* Share Button - Top Right */}
-                  <button 
-                    onClick={(e) => handleCardShare(e, item._id, item.title)}
-                    className="absolute top-4 right-4 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white text-slate-600 hover:text-primary shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/50"
-                    title="Share News"
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Content */}
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors font-display leading-snug line-clamp-2">
-                    {item.title}
-                  </h3>
-                  
-                  <p className="text-slate-500 font-light text-sm leading-relaxed mb-4 line-clamp-3 flex-grow font-sans">
-                    {item.description}
-                  </p>
-                  
-                  {/* Footer with Read More */}
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
-                    <span className="text-primary font-semibold text-sm inline-flex items-center group-hover:gap-2 transition-all duration-300">
-                      Read more
-                      <ArrowRight className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1.5 transition-transform duration-300" />
-                    </span>
-                    
-                    <div className="flex items-center gap-1 text-xs text-slate-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                      <span>{formatDisplayDate(item.date)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </Link>
-        ))
-      )}
-    </div>
-  </div>
-</motion.section>
+      <NewsSlider />
 
       {/* LOCATION MAP SECTION */}
       <LocationMap />

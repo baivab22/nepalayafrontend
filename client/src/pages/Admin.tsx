@@ -74,7 +74,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem(AUTH_KEY, "1");
+      sessionStorage.setItem(AUTH_KEY, password);
       onLogin();
     } else {
       setError(true);
