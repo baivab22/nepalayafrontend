@@ -116,7 +116,7 @@ export default function AdminDashboard() {
       label: "Total Teachers",
       value: stats?.teachers ?? 0,
       icon: Users,
-      color: "from-indigo-500 to-sky-600",
+      color: "from-blue-500 to-sky-600",
       bgColor: "bg-emerald-50",
       iconColor: "text-emerald-600",
       trend: stats?.teacherGrowth ?? 8,
@@ -126,9 +126,9 @@ export default function AdminDashboard() {
       label: "Total Employees",
       value: stats?.employees ?? 0,
       icon: Briefcase,
-      color: "from-purple-500 to-purple-600",
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600",
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
       trend: 5,
       trendUp: true
     },
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
         >
           <div className="flex justify-between items-center flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <img src="/images/nepalayalogo.jpeg" alt="Nepalaya Logo" className="w-20 h-20 rounded-3xl object-cover shadow-xl" />
+              <img src="/images/nepalayalogo.png" alt="Nepalaya Logo" className="w-20 h-20 rounded-3xl object-cover shadow-xl" />
               <div>
                 <h1 className="text-3xl font-bold text-slate-900">Welcome Back, Admin 👋</h1>
                 <p className="text-slate-500 mt-1">Here's what's happening with your institution today</p>
@@ -392,7 +392,7 @@ export default function AdminDashboard() {
                         {activity.type === 'student' && <GraduationCap className="w-4 h-4 text-primary" />}
                         {activity.type === 'meeting' && <Users className="w-4 h-4 text-emerald-500" />}
                         {activity.type === 'exam' && <Award className="w-4 h-4 text-amber-500" />}
-                        {activity.type === 'course' && <BookOpen className="w-4 h-4 text-purple-500" />}
+                        {activity.type === 'course' && <BookOpen className="w-4 h-4 text-blue-500" />}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-slate-700">{activity.action}</p>

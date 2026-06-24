@@ -20,10 +20,11 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Edit, Trash2, Eye, Calendar as CalendarIcon, X } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Calendar as CalendarIcon, X, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
@@ -62,6 +63,7 @@ const categories = [
 ];
 
 export default function NewsAdmin() {
+  const { toast } = useToast();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -71,6 +73,7 @@ export default function NewsAdmin() {
   const [viewing, setViewing] = useState<NewsItem | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pageSize = 10;
@@ -131,6 +134,7 @@ export default function NewsAdmin() {
   const handleClose = () => { 
     setOpen(false); 
     setEditId(null);
+    setErrors({});
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -172,6 +176,19 @@ export default function NewsAdmin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+    
+    const newErrors: Record<string, string> = {};
+    if (!form.title.trim()) newErrors.title = "Title is required";
+    if (!form.category) newErrors.category = "Please select a category";
+    if (!form.description.trim()) newErrors.description = "Description is required";
+    if (!form.date) newErrors.date = "Please select a date";
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast({ title: "Validation Error", description: "Please fill in all required fields.", variant: "destructive" });
+      return;
+    }
     
     let imageUrl = form.image;
     
@@ -182,6 +199,7 @@ export default function NewsAdmin() {
       } catch (error) {
         console.error("Error uploading image:", error);
         setUploading(false);
+        toast({ title: "Upload Failed", description: "Could not upload the image. Please try again.", variant: "destructive" });
         return;
       }
       setUploading(false);
@@ -191,34 +209,55 @@ export default function NewsAdmin() {
     const url = editId ? `${API_URL}/api/news/${editId}` : `${API_URL}/api/news`;
     
     const payload = {
-      title: form.title,
-      date: form.date ? format(form.date, "yyyy-MM-dd") : "",
+      title: form.title.trim(),
+      date: format(form.date || new Date(), "yyyy-MM-dd"),
       category: form.category,
-      description: form.description,
+      description: form.description.trim(),
       image: imageUrl,
       order: form.order
     };
     
     try {
-      await fetch(url, {
+      const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        const msg = errData?.details?.[0]?.message || errData?.error || "Failed to save news article";
+        toast({ title: "Error", description: msg, variant: "destructive" });
+        return;
+      }
+      
       fetchNews();
       handleClose();
+      toast({ title: editId ? "Updated" : "Created", description: `News article ${editId ? "updated" : "created"} successfully.` });
     } catch (error) {
       console.error("Error saving news:", error);
+      toast({ title: "Network Error", description: "Could not connect to the server. Please check your connection.", variant: "destructive" });
     }
   };
 
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this news item? This action cannot be undone.")) return;
+    setDeleting(id);
     try {
-      await fetch(`${API_URL}/api/news/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/api/news/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || "Failed to delete");
+      }
       fetchNews();
+      toast({ title: "Deleted", description: "News article removed successfully." });
+      setDeleteConfirm(null);
     } catch (error) {
-      console.error("Error deleting news:", error);
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to delete", variant: "destructive" });
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -363,14 +402,36 @@ export default function NewsAdmin() {
                               >
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
-                                onClick={() => handleDelete(item._id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              {deleteConfirm === item._id ? (
+                                <div className="flex items-center gap-1">
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive" 
+                                    className="h-8 text-xs px-2"
+                                    onClick={() => handleDelete(item._id)}
+                                    disabled={deleting === item._id}
+                                  >
+                                    {deleting === item._id ? "..." : "Confirm"}
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-8 text-xs px-2"
+                                    onClick={() => setDeleteConfirm(null)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                                  onClick={() => setDeleteConfirm(item._id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
                           </td>
                         </motion.tr>
@@ -428,11 +489,12 @@ export default function NewsAdmin() {
                 id="title"
                 name="title" 
                 value={form.title} 
-                onChange={handleChange} 
+                onChange={(e) => { handleChange(e); if (errors.title) setErrors((prev) => ({ ...prev, title: "" })); }} 
                 placeholder="Enter news title..."
                 required 
-                className="w-full"
+                className={`w-full ${errors.title ? "border-red-400 focus-visible:ring-red-400" : ""}`}
               />
+              {errors.title && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title}</p>}
             </div>
 
             {/* Category and Date Row */}
@@ -441,10 +503,10 @@ export default function NewsAdmin() {
                 <Label htmlFor="category" className="text-sm font-semibold mb-2 block">Category *</Label>
                 <Select 
                   value={form.category} 
-                  onValueChange={(value) => setForm({ ...form, category: value })}
+                  onValueChange={(value) => { setForm({ ...form, category: value }); if (errors.category) setErrors((prev) => ({ ...prev, category: "" })); }}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.category ? "border-red-400" : ""}>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -453,6 +515,7 @@ export default function NewsAdmin() {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.category && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.category}</p>}
               </div>
               
               <div>
@@ -463,7 +526,8 @@ export default function NewsAdmin() {
                       variant="outline"
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !form.date && "text-muted-foreground"
+                        !form.date && "text-muted-foreground",
+                        errors.date && "border-red-400"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -474,11 +538,12 @@ export default function NewsAdmin() {
                     <Calendar
                       mode="single"
                       selected={form.date}
-                      onSelect={(date) => setForm({ ...form, date })}
+                      onSelect={(date) => { setForm({ ...form, date }); if (errors.date) setErrors((prev) => ({ ...prev, date: "" })); }}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
+                {errors.date && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.date}</p>}
               </div>
             </div>
 
@@ -504,12 +569,13 @@ export default function NewsAdmin() {
                 id="description"
                 name="description" 
                 value={form.description} 
-                onChange={handleChange} 
+                onChange={(e) => { handleChange(e); if (errors.description) setErrors((prev) => ({ ...prev, description: "" })); }} 
                 placeholder="Write the news content here..."
                 required 
                 rows={5}
-                className="w-full resize-none"
+                className={`w-full resize-none ${errors.description ? "border-red-400 focus-visible:ring-red-400" : ""}`}
               />
+              {errors.description && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.description}</p>}
             </div>
 
             {/* Image Upload */}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -6,10 +6,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Outfit', sans-serif;
+  --font-display: 'Outfit', sans-serif;
 
-  /* Premium Academic Palette */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   
@@ -46,20 +45,18 @@
 }
 
 :root {
-  /* Near white background */
   --background: 0 0% 98%;
-  /* Deep Slate text */
   --foreground: 222 47% 11%;
   
-  /* Deep Indigo/Violet (#4F46E5) */
-  --primary: 243 75% 59%;
+  /* Rich Blue */
+  --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
   
-  /* Emerald (#10B981) */
+  /* Emerald */
   --secondary: 160 84% 39%;
   --secondary-foreground: 0 0% 100%;
   
-  /* Amber (#F59E0B) */
+  /* Amber */
   --accent: 38 92% 50%;
   --accent-foreground: 0 0% 100%;
   
@@ -77,16 +74,16 @@
   
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 243 75% 59%;
+  --ring: 217 91% 60%;
   
   --radius: 0.75rem;
 }
 
 .dark {
-  --background: 222 47% 11%; /* #0F172A */
+  --background: 222 47% 11%;
   --foreground: 210 40% 98%;
   
-  --primary: 243 75% 65%;
+  --primary: 217 91% 65%;
   --primary-foreground: 0 0% 100%;
   
   --secondary: 160 84% 39%;
@@ -109,7 +106,7 @@
   
   --border: 217 32% 17%;
   --input: 217 32% 17%;
-  --ring: 243 75% 65%;
+  --ring: 217 91% 65%;
 }
 
 @layer base {
@@ -138,7 +135,7 @@
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 animate-in fade-in;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 animate-in fade-in;
   }
   
   .text-gradient-gold {
@@ -148,9 +145,9 @@
   .bg-mesh {
     background-color: #0f172a;
     background-image: 
-      radial-gradient(at 40% 20%, hsla(243, 75%, 59%, 0.3) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, hsla(262, 83%, 58%, 0.3) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, hsla(243, 75%, 59%, 0.3) 0px, transparent 50%);
+      radial-gradient(at 40% 20%, hsla(217, 91%, 60%, 0.3) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(200, 90%, 50%, 0.3) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(217, 91%, 60%, 0.3) 0px, transparent 50%);
   }
 
   .blob-shape {

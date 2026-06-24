@@ -7,12 +7,17 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { GraduationCap } from "lucide-react";
 
+import { ReactLenis } from "lenis/react";
+
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Programs from "@/pages/Programs";
+import ProgramDetail from "@/pages/ProgramDetail";
 import Admissions from "@/pages/Admissions";
 import Faculty from "@/pages/Faculty";
+import FacultyDetail from "@/pages/FacultyDetail";
 import News from "@/pages/News";
+import NewsDetail from "@/pages/NewsDetail";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
@@ -70,7 +75,7 @@ function LoadingScreen() {
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
                 transition={{ duration: 1.5, ease: "easeInOut" }}
-                className="h-full bg-gradient-to-r from-primary to-violet-500"
+                className="h-full bg-primary"
               />
             </div>
           </div>
@@ -92,9 +97,12 @@ function Router() {
               <Route path="/" component={Home} />
               <Route path="/about" component={About} />
               <Route path="/programs" component={Programs} />
+              <Route path="/programs/:id" component={ProgramDetail} />
               <Route path="/admissions" component={Admissions} />
               <Route path="/faculty" component={Faculty} />
+              <Route path="/faculty/:id" component={FacultyDetail} />
               <Route path="/news" component={News} />
+              <Route path="/news/:id" component={NewsDetail} />
               <Route path="/contact" component={Contact} />
               <Route component={NotFound} />
             </Switch>
@@ -110,9 +118,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <LoadingScreen />
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
+        <ReactLenis root options={{ duration: 1.2, smoothWheel: true }}>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+        </ReactLenis>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

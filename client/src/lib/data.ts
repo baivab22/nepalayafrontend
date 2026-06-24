@@ -54,7 +54,7 @@ export const programs = [
     icon: "book-open",
     level: "Bachelor's / Master's",
     description: "Exploring the depth of human culture, languages, and societal structures.",
-    color: "from-indigo-500/20 to-sky-500/5",
+    color: "from-blue-500/20 to-sky-500/5",
     image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=800"
   },
   {
@@ -72,7 +72,7 @@ export const programs = [
     icon: "scale",
     level: "BA.LLB / LLM",
     description: "Comprehensive legal education focusing on national and international law.",
-    color: "from-indigo-500/20 to-indigo-600/5",
+    color: "from-blue-500/20 to-blue-600/5",
     image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800"
   },
   {

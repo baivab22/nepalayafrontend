@@ -32,6 +32,7 @@ interface Program {
   title: string;
   items: string[];
   description?: string;
+  image?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -39,6 +40,7 @@ interface Program {
 interface ProgramForm {
   title: string;
   items: string;
+  image?: string;
 }
 
 const formatItemsInput = (items: string[]) => {
@@ -61,6 +63,9 @@ export default function AdminPrograms() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [viewingItems, setViewingItems] = useState<Program | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
   
   const pageSize = 10;
 
@@ -102,17 +107,36 @@ export default function AdminPrograms() {
       return;
     }
     
-    const method = editing ? "PUT" : "POST";
-    const url = editing ? `${API_URL}/api/programs/${editing._id}` : `${API_URL}/api/programs`;
+    setUploading(true);
     
     try {
+      let imageUrl = form.image || "";
+      
+      if (imageFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append("image", imageFile);
+        
+        const uploadRes = await fetch(`${API_URL}/api/programs/upload-image`, {
+          method: "POST",
+          body: uploadFormData,
+        });
+        
+        if (!uploadRes.ok) throw new Error("Image upload failed");
+        
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.url;
+      }
+      
+      const method = editing ? "PUT" : "POST";
+      const url = editing ? `${API_URL}/api/programs/${editing._id}` : `${API_URL}/api/programs`;
+      
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           title: form.title, 
-          // Store items as a single description string in the backend
-          description: form.items 
+          description: form.items,
+          image: imageUrl,
         })
       });
       
@@ -125,6 +149,8 @@ export default function AdminPrograms() {
     } catch (error) {
       console.error("Error saving program:", error);
       toast.error("Failed to save program");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -132,8 +158,13 @@ export default function AdminPrograms() {
     setEditing(prog);
     setForm({ 
       title: prog.title, 
-      items: formatItemsInput(prog.items || [])
+      items: formatItemsInput(prog.items || []),
+      image: prog.image || "",
     });
+    if (prog.image) {
+      setImagePreview(`${API_URL}${prog.image}`);
+    }
+    setImageFile(null);
     setModalOpen(true);
   };
 
@@ -153,8 +184,10 @@ export default function AdminPrograms() {
   };
 
   const resetForm = () => {
-    setForm({ title: "", items: "" });
+    setForm({ title: "", items: "", image: "" });
     setEditing(null);
+    setImageFile(null);
+    setImagePreview("");
   };
 
   // Filtering and pagination
@@ -228,27 +261,31 @@ export default function AdminPrograms() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <CardContent className="p-6">
-                  <Skeleton className="h-12 w-12 rounded-lg mb-4" />
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-2/3" />
-                  <div className="flex gap-2 mt-4">
-                    <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-16" />
+              <Card key={i} className="overflow-hidden border-slate-200/60">
+                <Skeleton className="h-52 w-full rounded-none" />
+                <CardContent className="p-5 space-y-3">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-5 w-1/2" />
+                  <div className="flex gap-1.5 pt-2">
+                    <Skeleton className="h-6 w-20 rounded-md" />
+                    <Skeleton className="h-6 w-24 rounded-md" />
+                    <Skeleton className="h-6 w-16 rounded-md" />
                   </div>
                 </CardContent>
               </Card>
             ))
           ) : paginated.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <div className="text-slate-400 mb-2">No programs found</div>
-              <Button variant="outline" onClick={() => {
+            <div className="col-span-full flex flex-col items-center justify-center py-20 px-4">
+              <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+                <GraduationCap className="w-10 h-10 text-slate-300" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-700 mb-1">No programs found</h3>
+              <p className="text-sm text-slate-400 mb-6">Get started by creating your first academic program</p>
+              <Button onClick={() => {
                 resetForm();
                 setModalOpen(true);
-              }}>
+              }} className="bg-gradient-to-r from-primary to-sky-500 hover:from-primary/90 hover:to-sky-500/90 shadow-lg">
+                <Plus className="w-4 h-4 mr-2" />
                 Add your first program
               </Button>
             </div>
@@ -262,75 +299,97 @@ export default function AdminPrograms() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: idx * 0.05 }}
                 >
-                  <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-slate-200 h-full">
-                    <CardContent className="p-6 flex flex-col h-full">
-                      {/* Icon and Title */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-gradient-to-br from-primary/10 to-sky-500/10 rounded-xl">
-                          <GraduationCap className="w-8 h-8 text-primary" />
+                  <Card className="group relative overflow-hidden border-slate-200/60 bg-white shadow-sm hover:shadow-xl transition-all duration-500 h-full flex flex-col">
+                    {/* Image Section */}
+                    <div className={`relative w-full h-52 overflow-hidden ${!prog.image ? "bg-gradient-to-br from-slate-100 to-slate-200" : "bg-slate-100"}`}>
+                      {prog.image ? (
+                        <img 
+                          src={`${API_URL}${prog.image}`} 
+                          alt={prog.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <GraduationCap className="w-16 h-16 text-slate-300" />
                         </div>
-                        <Badge variant="secondary" className="bg-primary/10 text-primary">
-                          {getItemCount(prog.items)} Items
+                      )}
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      {/* Item count badge */}
+                      <div className="absolute top-3 right-3">
+                        <Badge className="bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0 font-medium">
+                          <BookOpen className="w-3 h-3 mr-1" />
+                          {getItemCount(prog.items)}
                         </Badge>
                       </div>
-                      
-                      <h3 className="font-bold text-xl text-slate-900 mb-3 group-hover:text-primary transition-colors">
+                      {/* Hover actions overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
+                        <Button 
+                          size="icon"
+                          variant="secondary" 
+                          onClick={() => setViewingItems(prog)}
+                          className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg"
+                        >
+                          <BookOpen className="w-4 h-4 text-slate-700" />
+                        </Button>
+                        <Button 
+                          size="icon"
+                          variant="secondary" 
+                          onClick={() => handleEdit(prog)}
+                          className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg"
+                        >
+                          <Pencil className="w-4 h-4 text-slate-700" />
+                        </Button>
+                        <Button 
+                          size="icon"
+                          variant="secondary" 
+                          onClick={() => handleDelete(prog._id)}
+                          className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg hover:text-red-500"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Content */}
+                    <CardContent className="p-5 flex-1 flex flex-col">
+                      {/* Title */}
+                      <h3 className="font-bold text-lg text-slate-900 mb-3 leading-snug line-clamp-2">
                         {prog.title}
                       </h3>
                       
-                      {/* Items Preview */}
-                      <div className="flex-grow mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <List className="w-4 h-4 text-slate-400" />
-                          <span className="text-sm font-medium text-slate-600">Curriculum Highlights:</span>
-                        </div>
-                        <ul className="space-y-1.5">
-                          {getPreviewItems(prog.items, 3).map((item, i) => (
-                            <li key={i} className="text-sm text-slate-600 flex items-start gap-2">
-                              <span className="text-primary mt-1">•</span>
-                              <span className="line-clamp-1">{item}</span>
-                            </li>
+                      {/* Items as tags */}
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-1.5">
+                          {getPreviewItems(prog.items, 4).map((item, i) => (
+                            <span 
+                              key={i} 
+                              className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-50 text-slate-600 text-xs font-medium border border-slate-200/60"
+                            >
+                              {item}
+                            </span>
                           ))}
-                        </ul>
-                        {prog.items.length > 3 && (
-                          <Button 
-                            variant="link" 
-                            size="sm" 
-                            className="mt-2 p-0 h-auto text-primary"
-                            onClick={() => setViewingItems(prog)}
-                          >
-                            + {prog.items.length - 3} more items
-                          </Button>
+                          {prog.items.length > 4 && (
+                            <button
+                              onClick={() => setViewingItems(prog)}
+                              className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium text-primary bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors cursor-pointer"
+                            >
+                              +{prog.items.length - 4}
+                            </button>
+                          )}
+                        </div>
+                        {prog.items.length === 0 && (
+                          <p className="text-xs text-slate-400 italic">No curriculum items</p>
                         )}
                       </div>
                       
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 pt-4 border-t border-slate-100">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => setViewingItems(prog)}
-                          className="flex-1"
-                        >
-                          <BookOpen className="w-4 h-4 mr-1" /> View All
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => handleEdit(prog)}
-                          className="flex-1"
-                        >
-                          <Pencil className="w-4 h-4 mr-1" /> Edit
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => handleDelete(prog._id)}
-                          className="flex-1 text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" /> Delete
-                        </Button>
-                      </div>
+                      {/* Bottom meta */}
+                      {prog.createdAt && (
+                        <div className="flex items-center gap-1.5 pt-4 mt-3 border-t border-slate-100 text-xs text-slate-400">
+                          <span>Added {new Date(prog.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -450,6 +509,59 @@ export default function AdminPrograms() {
                 Separate items with commas. Each item will be displayed as a bullet point.
               </p>
             </div>
+
+            {/* Image Upload */}
+            <div>
+              <Label htmlFor="image" className="text-sm font-semibold mb-2 block">
+                Program Image
+              </Label>
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setImageFile(file);
+                        setImagePreview(URL.createObjectURL(file));
+                        setForm(f => ({ ...f, image: "" }));
+                      }
+                    }}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                  />
+                </div>
+                {imagePreview && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview("");
+                      setForm(f => ({ ...f, image: "" }));
+                    }}
+                    className="shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+              {imagePreview && (
+                <div className="mt-3 rounded-lg overflow-hidden border border-slate-200 w-48 h-32">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Upload an image to represent this program. Recommended size: 1200x600px.
+              </p>
+            </div>
             
             {/* Preview Section */}
             {form.items && parseItemsInput(form.items).length > 0 && (
@@ -489,10 +601,11 @@ export default function AdminPrograms() {
               </Button>
               <Button 
                 type="submit" 
+                disabled={uploading}
                 className="bg-gradient-to-r from-primary to-sky-500 hover:from-primary/90 hover:to-sky-500/90"
               >
                 <Save className="w-4 h-4 mr-2" />
-                {editing ? "Update Program" : "Create Program"}
+                {uploading ? "Uploading..." : editing ? "Update Program" : "Create Program"}
               </Button>
             </DialogFooter>
           </form>
@@ -516,6 +629,16 @@ export default function AdminPrograms() {
           
           {viewingItems && (
             <div className="space-y-4">
+              {viewingItems.image && (
+                <div className="w-full h-48 rounded-lg overflow-hidden bg-slate-100">
+                  <img
+                    src={`${API_URL}${viewingItems.image}`}
+                    alt={viewingItems.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                </div>
+              )}
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-primary" />

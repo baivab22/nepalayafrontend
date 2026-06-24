@@ -1,100 +1,133 @@
+import { useLenis } from "lenis/react";
 import ModelImageModal from "@/components/ModelImageModal";
 import { PageTransition } from "@/components/PageTransition";
 import { Gallery } from "@/components/Gallery";
 import { LocationMap } from "@/components/LocationMap";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
+import { Link, useLocation } from "wouter";
+import FacultyCard from "@/components/FacultyCard";
+import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { 
-  ArrowRight, BookOpen, Users, Trophy, ChevronDown,
-  Microscope, ChevronLeft, ChevronRight, X
+  ArrowRight, BookOpen, GraduationCap, Users, Trophy, Clock, ChevronRight,
+  Microscope, X, Calendar, Share2
 } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 const ProgramCard = ({ prog, idx }: { prog: any, idx: number }) => {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-100, 100], [5, -5]);
-  const rotateY = useTransform(x, [-100, 100], [-8, 8]);
-  const defaultColors = "from-indigo-500 to-blue-600";
+  const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+  const [, navigate] = useLocation();
+  const items = Array.isArray(prog.items) ? prog.items : prog.description ? String(prog.description).split(",").map((s: string) => s.trim()).filter(Boolean) : [];
+  const duration = prog.duration || "4 Years";
+  const seats = prog.seats || 60;
+  const level = prog.level || "Bachelor";
+
+  const handleNav = () => navigate(`/programs/${prog._id}`);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 60 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: idx * 0.15 }}
-      style={{ perspective: 1000 }}
     >
-      <motion.div
-        onMouseMove={e => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          x.set(e.clientX - centerX);
-          y.set(e.clientY - centerY);
-        }}
-        onMouseLeave={() => { x.set(0); y.set(0); }}
-        style={{ rotateX, rotateY }}
-        whileHover={{ scale: 1.03 }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="group relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-slate-100 overflow-hidden h-full"
+      <div
+        onClick={handleNav}
+        className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200/60 overflow-hidden h-full flex flex-col cursor-pointer"
       >
-        <div className={`absolute inset-0 bg-gradient-to-br ${prog.colors || defaultColors} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
-        <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${prog.colors || defaultColors} opacity-5 rounded-bl-[100px] transition-transform duration-500 group-hover:scale-110`} />
-        <motion.div 
-          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${prog.colors || defaultColors} flex items-center justify-center text-white mb-6 shadow-md`}
-          whileHover={{ scale: 1.1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
-        >
-          {/* Optionally render icon if available as SVG or emoji */}
-          {prog.icon && <span dangerouslySetInnerHTML={{ __html: prog.icon }} />}
-        </motion.div>
-        <h3 className="text-2xl font-bold text-slate-900 mb-3">{prog.title}</h3>
-        <p className="text-slate-600 mb-8 leading-relaxed relative z-10">{prog.description}</p>
-        <Link href="/programs" className={`inline-flex items-center font-bold text-transparent bg-clip-text bg-gradient-to-r ${prog.colors || defaultColors} group-hover:opacity-80 transition-opacity`}>
-          Explore Program <ArrowRight className="ml-2 w-4 h-4 text-current stroke-[3]" />
-        </Link>
-      </motion.div>
-    </motion.div>
-  );
-};
+        {/* Image */}
+        <div className={`relative w-full h-48 overflow-hidden ${!prog.image ? "bg-gradient-to-br from-slate-100 to-slate-200" : "bg-slate-100"}`}>
+          {prog.image ? (
+            <img
+              src={`${API_URL}${prog.image}`}
+              alt={prog.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <GraduationCap className="w-14 h-14 text-slate-300" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-3 right-3">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0">
+              {level}
+            </span>
+          </div>
+        </div>
 
-import { useEffect, useState, useRef, useCallback } from "react";
-import { faculty } from "@/lib/data";
+        <div className="p-5 flex-1 flex flex-col">
+          <h3 className="font-bold text-lg text-slate-900 mb-3 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+            {prog.title}
+          </h3>
 
-const FacultyCard = ({ f, idx }: { f: any, idx: number }) => {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateY = useTransform(x, [-100, 100], [10, -10]);
-  const rotateX = useTransform(y, [-100, 100], [-6, 6]);
+          {/* Items as tags */}
+          <div className="flex-1 mb-4">
+            <div className="flex flex-wrap gap-1.5">
+              {items.length > 0 ? (
+                items.slice(0, 4).map((item: string, i: number) => (
+                  <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-50 text-slate-600 text-xs font-medium border border-slate-200/60">
+                    {item}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-slate-400 italic">Coming soon</span>
+              )}
+              {items.length > 4 && (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium text-primary bg-primary/5 border border-primary/20">
+                  +{items.length - 4}
+                </span>
+              )}
+            </div>
+          </div>
 
-  return (
-    <motion.div
-      onMouseMove={e => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        x.set(e.clientX - centerX);
-        y.set(e.clientY - centerY);
-      }}
-      onMouseLeave={() => { x.set(0); y.set(0); }}
-      style={{ rotateX, rotateY }}
-      whileHover={{ scale: 1.04 }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="bg-white rounded-2xl p-6 shadow-2xl border border-slate-100 w-[300px] h-full flex flex-col items-center text-center"
-    >
-      <div className="w-28 h-28 rounded-full overflow-hidden mb-4 shadow-lg">
-        <img src={f.image} alt={f.name} className="w-full h-full object-cover" />
+          {/* Meta */}
+          <div className="flex items-center gap-3 pt-4 mt-auto border-t border-slate-100">
+            <div className="flex items-center gap-1 text-xs text-slate-400">
+              <Clock className="w-3 h-3" />
+              {duration}
+            </div>
+            <div className="flex items-center gap-1 text-xs text-slate-400">
+              <Users className="w-3 h-3" />
+              {seats} seats
+            </div>
+            <div className="ml-auto">
+              <span className="inline-flex items-center gap-1 text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+                <BookOpen className="w-3 h-3" />
+                {items.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => { e.stopPropagation(); navigate(`/programs/${prog._id}`); }}
+              className="flex-1 border-slate-200 hover:border-primary hover:text-primary text-slate-600"
+            >
+              <BookOpen className="w-3.5 h-3.5 mr-1" />
+              Details
+            </Button>
+            <Link href="/admissions" className="flex-1" onClick={(e) => e.stopPropagation()}>
+              <Button size="sm" className="w-full bg-slate-900 text-white hover:bg-slate-800">
+                <ArrowRight className="w-3.5 h-3.5 mr-1" />
+                Apply
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
-      <h3 className="text-lg font-bold text-slate-900">{f.name}</h3>
-      <p className="text-sm text-slate-500 mt-1">{f.designation}</p>
-      <p className="text-xs text-slate-400 mt-2">{f.department}</p>
-      <div className="mt-4 text-sm text-slate-600">{f.education}</div>
     </motion.div>
   );
 };
 
-const FacultyDetailModal = ({ faculty, open, onClose }: { faculty: any | null; open: boolean; onClose: () => void }) => {
+import { useEffect, useState, useRef } from "react";
+
+const FacultyDetailModal = ({ faculty, open, onClose, getPhotoUrl }: { faculty: any | null; open: boolean; onClose: () => void; getPhotoUrl: (photo: string) => string }) => {
   if (!open || !faculty) return null;
 
   return (
@@ -103,56 +136,61 @@ const FacultyDetailModal = ({ faculty, open, onClose }: { faculty: any | null; o
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
       >
         <motion.div
-          initial={{ y: 24, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 24, opacity: 0 }}
-          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ y: 24, opacity: 0, scale: 0.97 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: 24, opacity: 0, scale: 0.97 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-3xl overflow-hidden rounded-[32px] bg-white shadow-2xl"
         >
-          <div className="relative">
-            <img src={faculty.image} alt={faculty.name} className="h-80 w-full object-cover" />
+          <div className="relative h-80 overflow-hidden bg-slate-900 flex items-center justify-center">
+            <img
+              src={getPhotoUrl(faculty.photo)}
+              alt={faculty.name}
+              className="w-full h-full object-contain p-4"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
             <button
               type="button"
               onClick={onClose}
-              className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-lg hover:bg-white"
+              className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm text-white shadow-lg hover:bg-black/50 transition-all z-10"
             >
               <X className="h-5 w-5" />
             </button>
-          </div>
-          <div className="p-8">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h3 className="text-3xl font-bold text-slate-900">{faculty.name}</h3>
-                <p className="text-sm uppercase tracking-[0.24em] text-primary mt-2">{faculty.designation}</p>
-              </div>
-              <div className="rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700">
-                {faculty.department}
+            <div className="absolute bottom-6 left-8 right-8 z-10">
+              <h3 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{faculty.name}</h3>
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="text-sm font-medium text-white/90">{faculty.role}</p>
+                <span className="w-1 h-1 rounded-full bg-white/40" />
+                <span className="inline-flex items-center px-3 py-0.5 rounded-full bg-white/15 backdrop-blur-sm text-xs font-semibold text-white border border-white/20">
+                  {faculty.department}
+                </span>
               </div>
             </div>
-            <p className="mt-6 text-slate-600 text-base leading-8">
-              {faculty.name} brings a wealth of experience in {faculty.department.toLowerCase()} education. With a strong academic background and a student-first approach, they help learners gain practical knowledge and confidence.
+          </div>
+          <div className="pb-8 px-8 pt-6">
+            <p className="text-slate-600 text-base leading-8 border-l-2 border-primary/20 pl-4">
+              {faculty.description}
             </p>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl bg-slate-50 p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Education</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">{faculty.education}</p>
+              <div className="rounded-2xl bg-slate-50 p-5 border border-slate-100">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">Department</p>
+                <p className="mt-2 text-base font-semibold text-slate-900">{faculty.department}</p>
               </div>
-              <div className="rounded-3xl bg-slate-50 p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Role</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">{faculty.designation}</p>
+              <div className="rounded-2xl bg-slate-50 p-5 border border-slate-100">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">Role</p>
+                <p className="mt-2 text-base font-semibold text-slate-900">{faculty.role}</p>
               </div>
-            </div>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl bg-slate-50 p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Expertise</p>
-                <p className="mt-2 text-base text-slate-700">Student mentorship, research guidance, curriculum development.</p>
+              <div className="rounded-2xl bg-slate-50 p-5 border border-slate-100">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">Expertise</p>
+                <p className="mt-2 text-base text-slate-600">Student mentorship, research guidance, curriculum development.</p>
               </div>
-              <div className="rounded-3xl bg-slate-50 p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Student Impact</p>
-                <p className="mt-2 text-base text-slate-700">Committed to career-ready instruction and high student engagement.</p>
+              <div className="rounded-2xl bg-slate-50 p-5 border border-slate-100">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">Impact</p>
+                <p className="mt-2 text-base text-slate-600">Committed to career-ready instruction and high student engagement.</p>
               </div>
             </div>
           </div>
@@ -162,244 +200,251 @@ const FacultyDetailModal = ({ faculty, open, onClose }: { faculty: any | null; o
   );
 };
 
+const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
+const getPhotoUrl = (photo: string) => {
+  if (!photo) return "";
+  if (photo.startsWith("http://") || photo.startsWith("https://")) return photo;
+  if (photo.startsWith("/api/")) return `${API_URL}${photo}`;
+  return `${API_URL}/api/faculty/photo/${photo}`;
+};
+
+const getImageUrl = (image?: string) => {
+  if (!image) return "";
+  if (image.startsWith("http://") || image.startsWith("https://")) return image;
+  if (image.startsWith("/api/")) return `${API_URL}${image}`;
+  return `${API_URL}/api/news/image/${image}`;
+};
+
 const FacultySlider = () => {
-  const sliderRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [facultyList, setFacultyList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedFaculty, setSelectedFaculty] = useState<any | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const intervalRef = useRef<number | null>(null);
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [scrollRange, setScrollRange] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const totalSlides = faculty.length;
-  // Triple the array for infinite scroll
-  const extendedFaculty = [...faculty];
-  const middleIndex = totalSlides;
+  useLenis(() => {
+    if (!sectionRef.current) return;
+    const rect = sectionRef.current.getBoundingClientRect();
+    const viewH = window.innerHeight;
+    const sectionH = rect.height;
+    const total = sectionH - viewH;
+    if (total <= 0) return;
+    setScrollProgress(Math.max(0, Math.min(1, -rect.top / total)));
+  });
 
-  const scrollToIndex = useCallback((index: number, smooth: boolean = true) => {
-    const container = sliderRef.current;
-    if (!container) return;
+  useEffect(() => {
+    const updateRange = () => {
+      if (trackRef.current && containerRef.current) {
+        const trackW = trackRef.current.scrollWidth;
+        const containerW = containerRef.current.clientWidth;
+        setScrollRange(Math.max(0, trackW - containerW));
+      }
+    };
+    updateRange();
+    window.addEventListener("resize", updateRange);
+    return () => window.removeEventListener("resize", updateRange);
+  }, [facultyList]);
 
-    const items = container.querySelectorAll('.slide-item');
-    const targetItem = items[index];
-    if (!targetItem) return;
-
-    targetItem.scrollIntoView({
-      behavior: smooth ? 'smooth' : 'auto',
-      inline: 'center',
-      block: 'nearest'
-    });
+  useEffect(() => {
+    const fetchFaculty = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/faculty`);
+        const data = await res.json();
+        setFacultyList(Array.isArray(data) ? data : data.faculty || []);
+      } catch (err) {
+        console.error("Error fetching faculty:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFaculty();
   }, []);
 
-  const goToSlide = useCallback((index: number) => {
-    if (isTransitioning) return;
-    setIsTransitioning(true);
-    
-    const targetIndex = index + middleIndex;
-    setActiveIndex(index);
-    scrollToIndex(targetIndex);
-    
-    setTimeout(() => setIsTransitioning(false), 500);
-  }, [scrollToIndex, middleIndex, isTransitioning]);
+  if (loading || facultyList.length === 0) return null;
 
-  const goNext = useCallback(() => {
-    if (isTransitioning) return;
-    const nextIndex = (activeIndex + 1) % totalSlides;
-    goToSlide(nextIndex);
-  }, [activeIndex, totalSlides, goToSlide, isTransitioning]);
-
-  const goPrev = useCallback(() => {
-    if (isTransitioning) return;
-    const prevIndex = (activeIndex - 1 + totalSlides) % totalSlides;
-    goToSlide(prevIndex);
-  }, [activeIndex, totalSlides, goToSlide, isTransitioning]);
-
-  const applyTransforms = useCallback(() => {
-    const container = sliderRef.current;
-    if (!container) return;
-
-    const rect = container.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const items = container.querySelectorAll('.slide-item');
-
-    items.forEach((node) => {
-      const card = node.firstElementChild as HTMLElement | null;
-      if (!card) return;
-
-      const r = node.getBoundingClientRect();
-      const cardCenter = r.left + r.width / 2;
-      const offset = (cardCenter - centerX) / rect.width;
-      
-      // Fade out items that are too far
-      const absOffset = Math.abs(offset);
-      if (absOffset > 0.9) {
-        card.style.opacity = '0.2';
-        card.style.transform = 'perspective(1200px) translateZ(0px) rotateY(0deg) scale(0.8)';
-        card.style.filter = 'drop-shadow(0 8px 16px rgba(15, 23, 42, 0.05))';
-        card.style.pointerEvents = 'none';
-        return;
-      }
-
-      card.style.pointerEvents = 'auto';
-      card.style.opacity = '1';
-      
-      const rotateY = offset * -30;
-      const translateZ = Math.max(0, 150 - absOffset * 300);
-      const scale = 1 - Math.min(0.15, absOffset * 0.15);
-      
-      card.style.transform = `perspective(1200px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
-      card.style.transition = 'transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 500ms ease, opacity 500ms ease';
-      
-      const isCenter = absOffset < 0.05;
-      card.style.filter = isCenter 
-        ? 'drop-shadow(0 25px 50px rgba(15, 23, 42, 0.2))'
-        : 'drop-shadow(0 10px 20px rgba(15, 23, 42, 0.08))';
-    });
-  }, []);
-
-  // Handle scroll events and infinite loop
-  useEffect(() => {
-    const container = sliderRef.current;
-    if (!container) return;
-
-    let scrollTimeout: number;
-
-    const handleScroll = () => {
-      applyTransforms();
-      
-      clearTimeout(scrollTimeout);
-      scrollTimeout = window.setTimeout(() => {
-        const scrollLeft = container.scrollLeft;
-        const scrollWidth = container.scrollWidth;
-        const clientWidth = container.clientWidth;
-        
-        // Check if we need to loop
-        if (scrollLeft >= scrollWidth - clientWidth - 10) {
-          // Reached end, jump to beginning of middle set
-          const targetIndex = middleIndex;
-          const items = container.querySelectorAll('.slide-item');
-          const targetItem = items[targetIndex];
-          if (targetItem) {
-            targetItem.scrollIntoView({ inline: 'center', behavior: 'auto' });
-          }
-        } else if (scrollLeft <= 10) {
-          // Reached beginning, jump to end of middle set
-          const targetIndex = middleIndex + totalSlides - 1;
-          const items = container.querySelectorAll('.slide-item');
-          const targetItem = items[targetIndex];
-          if (targetItem) {
-            targetItem.scrollIntoView({ inline: 'center', behavior: 'auto' });
-          }
-        }
-      }, 100);
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', applyTransforms);
-
-    // Initial setup
-    setTimeout(() => {
-      applyTransforms();
-      const items = container.querySelectorAll('.slide-item');
-      const targetItem = items[middleIndex];
-      if (targetItem) {
-        targetItem.scrollIntoView({ inline: 'center', behavior: 'auto' });
-      }
-    }, 100);
-
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', applyTransforms);
-      clearTimeout(scrollTimeout);
-    };
-  }, [applyTransforms, middleIndex, totalSlides]);
-
-  // Auto-play with hover pause
-  useEffect(() => {
-    if (isHovered || isTransitioning) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      intervalRef.current = window.setInterval(goNext, 4000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [isHovered, goNext, isTransitioning]);
-
-  // Touch events for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    touchEndX.current = e.changedTouches[0].clientX;
-    const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        goNext();
-      } else {
-        goPrev();
-      }
-    }
-  };
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') goNext();
-      if (e.key === 'ArrowLeft') goPrev();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goNext, goPrev]);
+  const x = -(scrollProgress * scrollRange);
 
   return (
-    <section 
-      className="py-24 bg-gradient-to-b from-slate-50 to-white overflow-hidden"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <section
+      ref={sectionRef}
+      className="relative h-[300vh] bg-gradient-to-b from-slate-50 to-white"
     >
-      <FacultyDetailModal 
-        faculty={selectedFaculty} 
-        open={!!selectedFaculty} 
-        onClose={() => setSelectedFaculty(null)} 
+      <FacultyDetailModal
+        faculty={selectedFaculty}
+        open={!!selectedFaculty}
+        onClose={() => setSelectedFaculty(null)}
+        getPhotoUrl={getPhotoUrl}
       />
-      
 
+      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full shrink-0">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-4">
+            <div>
+              <h4 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Faculty</h4>
+              <motion.h2
+                initial={{ x: -80, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
+                whileHover={{ x: 0 }}
+                viewport={{ once: false, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight"
+              >
+                Meet Our Faculties
+              </motion.h2>
+              <p className="text-lg text-slate-600 mt-2">Passionate educators dedicated to shaping the next generation of leaders.</p>
+            </div>
+            <Link href="/faculty">
+              <Button variant="outline" size="lg" className="rounded-full px-8 border-2 border-slate-200 hover:border-primary hover:text-primary whitespace-nowrap">
+                View All Faculty <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        <div ref={containerRef} className="w-full overflow-hidden">
+          <motion.div
+            ref={trackRef}
+            className="flex gap-4 px-4 sm:px-6 lg:px-8"
+            style={{ x: scrollRange > 0 ? x : 0 }}
+          >
+            {facultyList.map((f, idx) => (
+              <div
+                key={`fac-${idx}`}
+                className="shrink-0 w-[300px] cursor-pointer"
+                onClick={() => setSelectedFaculty(f)}
+              >
+                <FacultyCard faculty={f} getPhotoUrl={getPhotoUrl} tilt />
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </div>
     </section>
   );
 };
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const formatDisplayDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    return format(date, "MMM dd, yyyy");
+  } catch {
+    return dateString;
+  }
+};
 
 export default function Home() {
   const [programs, setPrograms] = useState<any[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);
-  const fadeIn = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-  };
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
+  const [news, setNews] = useState<any[]>([]);
+  const [loadingNews, setLoadingNews] = useState(true);
+  const { toast } = useToast();
+
+  const { scrollY } = useScroll();
+  const heroY = useTransform(scrollY, [0, 700], [0, 160]);
+  const heroContentY = useTransform(scrollY, [0, 700], [0, -40]);
+  const smoothHeroY = useSpring(heroY, { stiffness: 80, damping: 25, mass: 0.5 });
+
+  const aboutRef1 = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: aboutProgress1 } = useScroll({
+    target: aboutRef1,
+    offset: ["start end", "end start"],
+  });
+  const aboutImgY1 = useTransform(aboutProgress1, [0, 1], [100, -100]);
+  const smoothAboutImgY1 = useSpring(aboutImgY1, { stiffness: 80, damping: 25, mass: 0.5 });
+
+  const aboutRef2 = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: aboutProgress2 } = useScroll({
+    target: aboutRef2,
+    offset: ["start end", "end start"],
+  });
+  const aboutImgY2 = useTransform(aboutProgress2, [0, 1], [-100, 100]);
+  const smoothAboutImgY2 = useSpring(aboutImgY2, { stiffness: 80, damping: 25, mass: 0.5 });
+
+  const handleCardShare = async (e: React.MouseEvent, newsId?: string, title?: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!newsId) return;
+    const shareUrl = `${window.location.origin}/news/${newsId}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: title || "Nepalaya News",
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link Copied!",
+          description: "News link copied to clipboard.",
+        });
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link Copied!",
+          description: "News link copied to clipboard.",
+        });
+      }
     }
   };
-  const headlineWords = ["Shape", "Your", "Future", "at", "Nepal's", "Premier", "Institution."];
-  const particles = Array.from({ length: 12 });
+  const [slides, setSlides] = useState<any[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [slidesLoaded, setSlidesLoaded] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const getSlideMediaUrl = (media: string) => {
+    if (!media) return "";
+    if (media.startsWith("http://") || media.startsWith("https://")) return media;
+    if (media.startsWith("/api/")) return `${API_URL}${media}`;
+    return `${API_URL}/api/slider/media/${media}`;
+  };
+
+  useEffect(() => {
+    const loadSlides = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/slider/active`);
+        const data = await res.json();
+        const list = data?.slides || [];
+        setSlides(list);
+      } catch {
+        setSlides([]);
+      } finally {
+        setSlidesLoaded(true);
+      }
+    };
+    loadSlides();
+  }, []);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    intervalRef.current = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % slides.length);
+    }, 6000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [slides.length]);
+
+  const goToSlide = (idx: number) => {
+    setCurrentSlide(idx);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (slides.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setCurrentSlide(prev => (prev + 1) % slides.length);
+      }, 6000);
+    }
+  };
+
+  const prevSlide = () => {
+    goToSlide((currentSlide - 1 + slides.length) % slides.length);
+  };
+
+  const nextSlide = () => {
+    goToSlide((currentSlide + 1) % slides.length);
+  };
 
   useEffect(() => {
     const loadPrograms = async () => {
@@ -420,97 +465,59 @@ export default function Home() {
       }
     };
 
+    const loadNews = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/news`);
+        if (!response.ok) {
+          throw new Error(`Failed to load news: ${response.status}`);
+        }
+        const data = await response.json();
+        const list = Array.isArray(data) ? data : (data?.news || []);
+        setNews(list.slice(0, 4));
+      } catch (error) {
+        console.error("Error fetching home news:", error);
+        setNews([]);
+      } finally {
+        setLoadingNews(false);
+      }
+    };
+
     loadPrograms();
+    loadNews();
   }, []);
 
   return (
     <PageTransition>
       <ModelImageModal />
-      {/* HERO SECTION */}
-      <section className="relative min-h-screen flex items-center pt-20 pb-32 overflow-hidden bg-slate-900">
-        {/* Animated Orbs/Blobs */}
-        <motion.div 
-          animate={{ y: [-20, 20] }}
-          transition={{ duration: 6, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-          className="absolute top-[10%] -left-20 w-[30rem] h-[30rem] bg-indigo-500/15 blur-[100px] rounded-full z-0 pointer-events-none"
-        />
-        <motion.div 
-          animate={{ y: [20, -20] }}
-          transition={{ duration: 8, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-          className="absolute bottom-[10%] -right-20 w-[35rem] h-[35rem] bg-amber-500/10 blur-[120px] rounded-full z-0 pointer-events-none"
-        />
-        <motion.div 
-          animate={{ x: [-15, 15] }}
-          transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-          className="absolute top-1/2 right-[20%] w-[25rem] h-[25rem] bg-violet-600/12 blur-[90px] rounded-full z-0 pointer-events-none"
-        />
-
-        {/* Floating Particles */}
-        {particles.map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              y: [Math.random() * -10, Math.random() * -30, Math.random() * -10],
-              opacity: [0.2, 0.8, 0.2]
-            }}
-            transition={{
-              duration: 4 + Math.random() * 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute rounded-full bg-white z-0 pointer-events-none"
-            style={{
-              width: Math.random() * 4 + 4,
-              height: Math.random() * 4 + 4,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-          />
-        ))}
-
-        {/* Background Image & Overlay */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <img 
-            src={`${import.meta.env.BASE_URL}images/hero-campus.png`} 
-            alt="Campus" 
-            className="w-full h-full object-cover opacity-30 mix-blend-overlay"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 w-full md:w-3/4 opacity-90 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90 z-10" />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full">
-          <div className="max-w-3xl">
-            <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
-              <motion.div variants={fadeIn} className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-400 text-sm font-semibold mb-6">
+      {/* HERO CAROUSEL */}
+      <section className="relative h-screen overflow-hidden bg-slate-900">
+        {slidesLoaded && slides.length === 0 ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 overflow-hidden">
+              <motion.div style={{ y: smoothHeroY }} className="absolute inset-0 will-change-transform">
+                <img
+                  src={`${import.meta.env.BASE_URL}images/hero-campus.png`}
+                  alt=""
+                  className="w-full h-full object-cover opacity-40"
+                />
+              </motion.div>
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/70 to-transparent" />
+            </div>
+            <motion.div style={{ y: heroContentY }} className="relative z-20 text-center px-4">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-400 text-sm font-semibold mb-6">
                 <span className="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse" />
                 Est. 1984 AD
-              </motion.div>
-              
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black text-white leading-[1.1] tracking-tight mb-6 flex flex-wrap gap-x-4">
-                {headlineWords.map((word, i) => (
-                  <motion.span
-                    key={i}
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                    className={word === "Nepal's" || word === "Premier" ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500" : ""}
-                  >
-                    {word}
-                  </motion.span>
-                ))}
+              </div>
+              <h1 className="text-5xl md:text-7xl font-display font-black text-white leading-tight mb-6">
+                Nepalaya Educational Foundation
               </h1>
-              
-              <motion.p variants={fadeIn} className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl leading-relaxed font-light">
-                Discover world-class education right here in the Kathmandu Valley. We blend rich cultural heritage with cutting-edge academic excellence to create the leaders of tomorrow.
-              </motion.p>
-              
-              <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4">
+              <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+                Discover world-class education right here in the Kathmandu Valley.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/admissions">
-                  <Button size="lg" className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300">
-                    <span className="relative flex items-center">
-                      Apply Now <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </span>
+                  <Button size="lg" className="h-14 px-8 text-lg bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg shadow-slate-900/25">
+                    Apply Now <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
                 <Link href="/programs">
@@ -518,30 +525,119 @@ export default function Home() {
                     Explore Programs
                   </Button>
                 </Link>
-              </motion.div>
+              </div>
             </motion.div>
           </div>
-        </div>
+        ) : (
+          <>
+            <AnimatePresence mode="wait">
+              {slides.map((slide, idx) =>
+                idx === currentSlide && (
+                  <motion.div
+                    key={slide._id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0"
+                  >
+                    <motion.div style={{ y: smoothHeroY }} className="absolute inset-0 overflow-hidden will-change-transform">
+                      {slide.type === "video" ? (
+                        <video
+                          src={getSlideMediaUrl(slide.media)}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                        />
+                      ) : (
+                        <motion.img
+                          src={getSlideMediaUrl(slide.media)}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          initial={{ scale: 1.15 }}
+                          animate={{ scale: 1.05 }}
+                          transition={{ duration: 8, ease: "easeOut" }}
+                        />
+                      )}
+                    </motion.div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-slate-900/10" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-transparent to-slate-900/60" />
+                  </motion.div>
+                )
+              )}
+            </AnimatePresence>
 
-        {/* Bouncing Scroll Indicator */}
-        <motion.div 
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center text-slate-400 z-20"
-        >
-          <span className="text-sm font-medium tracking-widest uppercase mb-2">Scroll Down</span>
-          <ChevronDown className="w-5 h-5" />
-        </motion.div>
+            {/* <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.5, delay: 0.6 }}
+              className="absolute bottom-32 md:bottom-40 left-0 right-0 z-10 text-center px-4"
+            >
+              <div className="max-w-7xl mx-auto">
+                <motion.div
+                  key={`est-${currentSlide}`}
+                  initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration: 1, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  className="inline-flex items-center px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-400 text-sm font-semibold"
+                >
+                  <span className="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse" />
+                  Est. 1984 AD
+                </motion.div>
+              </div>
+            </motion.div> */}
+
+            <button
+              onClick={prevSlide}
+              className="absolute left-5 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/5 backdrop-blur-lg border border-white/10 flex items-center justify-center text-white hover:bg-white/15 hover:border-white/30 transition-all duration-300 opacity-0 md:opacity-100 group"
+            >
+              <ChevronRight className="w-5 h-5 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-5 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/5 backdrop-blur-lg border border-white/10 flex items-center justify-center text-white hover:bg-white/15 hover:border-white/30 transition-all duration-300 opacity-0 md:opacity-100 group"
+            >
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+              {slides.map((_, idx) => (
+                <button key={idx} onClick={() => goToSlide(idx)} className="group relative">
+                  <div
+                    className={`rounded-full transition-all duration-700 ease-out ${
+                      idx === currentSlide
+                        ? "w-12 h-2.5 bg-primary shadow-lg shadow-primary/40"
+                        : "w-2.5 h-2.5 bg-white/30 hover:bg-white/60"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className="absolute bottom-0 left-0 right-0 z-20 h-1 bg-white/5">
+              <motion.div
+                key={currentSlide}
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 6, ease: "linear" }}
+                className="h-full bg-primary"
+              />
+            </div>
+          </>
+        )}
       </section>
 
       {/* STATS SECTION */}
-      <section className="relative z-30 -mt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
+      <section className="relative z-30 -mt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-0">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {[
             { label: "Students Enrolled", value: 500, suffix: "+", icon: <Users className="text-primary" /> },
             { label: "Expert Faculty", value: 20, suffix: "+", icon: <BookOpen className="text-amber-500" /> },
             { label: "Academic Programs", value: 5, suffix: "+", icon: <Microscope className="text-emerald-500" /> },
-            { label: "Placement Rate", value: 98, suffix: "%", icon: <Trophy className="text-rose-500" /> },
+            { label: "Passout rate", value: 98, suffix: "%", icon: <Trophy className="text-rose-500" /> },
           ].map((stat, idx) => (
             <motion.div 
               key={idx}
@@ -569,21 +665,25 @@ export default function Home() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="py-24 bg-white overflow-hidden"
+        className="py-16 bg-white"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 lg:space-y-20">
+          {/* First Row: Image Left, Text Right */}
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative">
+            <div ref={aboutRef1} className="relative">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-3xl -m-6 -z-10 transform -rotate-3" />
-              <motion.img 
-                initial={{ clipPath: "inset(0 100% 0 0)" }}
-                whileInView={{ clipPath: "inset(0 0% 0 0)" }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                src={`${import.meta.env.BASE_URL}images/about-college.png`} 
-                alt="Students in library" 
-                className="rounded-3xl shadow-2xl relative z-10 border border-slate-100"
-              />
+              <div className="overflow-hidden rounded-3xl">
+                <motion.img 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ y: smoothAboutImgY1 }}
+                  src={`${import.meta.env.BASE_URL}images/about-college.png`} 
+                  alt="Students in library" 
+                  className="w-full rounded-3xl shadow-2xl relative z-10 border border-slate-100 will-change-transform"
+                />
+              </div>
               <motion.div 
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -661,6 +761,92 @@ export default function Home() {
               </motion.div>
             </div>
           </div>
+
+          {/* Second Row: Swapped Order, Text Left, Image Right, No Header */}
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6 leading-tight"
+              >
+                A Legacy of Learning in the <span className="text-gradient">Heart of Nepal</span>
+              </motion.h2>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="text-lg text-slate-600 mb-8 leading-relaxed"
+              >
+                Founded in 1984 AD, Nepalaya Educational Foundation stands as a beacon of academic excellence. We are committed to nurturing intellectual curiosity and producing graduates who lead with integrity.
+              </motion.p>
+              
+              <ul className="space-y-4 mb-10">
+                {[
+                  "Affiliated with Tribhuvan University",
+                  "State-of-the-art research laboratories",
+                  "Global exchange programs",
+                  "Comprehensive scholarship schemes"
+                ].map((item, i) => (
+                  <motion.li 
+                    key={i} 
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className="flex items-center text-slate-700 font-medium"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mr-3 shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    </div>
+                    {item}
+                  </motion.li>
+                ))}
+              </ul>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.7 }}
+              >
+                <Link href="/about">
+                  <Button size="lg" className="rounded-full px-8 bg-slate-900 hover:bg-slate-800 text-white">
+                    Discover Our History
+                  </Button>
+                </Link>
+              </motion.div>
+            </div>
+
+            <div ref={aboutRef2} className="relative">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-3xl -m-6 -z-10 transform rotate-3" />
+              <div className="overflow-hidden rounded-3xl">
+                <motion.img 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ y: smoothAboutImgY2 }}
+                  src={`${import.meta.env.BASE_URL}images/about-college.png`} 
+                  alt="Students in library" 
+                  className="w-full rounded-3xl shadow-2xl relative z-10 border border-slate-100 will-change-transform"
+                />
+              </div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="absolute -bottom-8 -left-8 bg-white p-6 rounded-2xl shadow-xl z-20 border border-slate-100 hidden md:block"
+              >
+                <div className="text-4xl font-black text-primary mb-1">50+</div>
+                <div className="text-sm font-semibold text-slate-600 uppercase">Years of<br/>Excellence</div>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </motion.section>
 
@@ -670,10 +856,10 @@ export default function Home() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="py-24 bg-slate-50 relative"
+        className="pb-10 pt-16 bg-slate-50 relative"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-12">
             <h4 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Academics</h4>
             <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6">Our Diverse Programs</h2>
             <p className="text-lg text-slate-600">Choose from a wide array of undergraduate and postgraduate programs designed to meet global standards and industry needs.</p>
@@ -689,7 +875,7 @@ export default function Home() {
             ))}
           </div>
           
-          <div className="mt-16 text-center">
+          <div className="mt-12 text-center">
             <Link href="/programs">
               <Button variant="outline" size="lg" className="rounded-full px-8 border-2 border-slate-200 hover:border-primary hover:text-primary">
                 View All {programs.length} Programs
@@ -705,11 +891,133 @@ export default function Home() {
       {/* FACULTY SECTION */}
       <FacultySlider />
 
+      {/* LATEST NEWS SECTION */}
+   {/* LATEST NEWS SECTION */}
+<motion.section 
+  initial={{ opacity: 0, y: 60 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, margin: "-100px" }}
+  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+  className="py-16 bg-white relative"
+>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+      <div>
+        <h4 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Updates</h4>
+        <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight">Latest News & Events</h2>
+        <p className="text-lg text-slate-600 mt-2">Stay informed with the latest updates, announcements, and key events from our campus.</p>
+      </div>
+      <Link href="/news">
+        <Button variant="outline" size="lg" className="rounded-full px-8 border-2 border-slate-200 hover:border-primary hover:text-primary whitespace-nowrap">
+          View All News <ArrowRight className="ml-2 w-4 h-4" />
+        </Button>
+      </Link>
+    </div>
+
+    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {loadingNews ? (
+        Array.from({ length: 4 }).map((_, idx) => (
+          <div key={idx} className="space-y-4">
+            <div className="h-48 bg-slate-100 rounded-2xl animate-pulse" />
+            <div className="h-6 bg-slate-100 rounded animate-pulse w-3/4" />
+            <div className="h-4 bg-slate-100 rounded animate-pulse w-1/2" />
+          </div>
+        ))
+      ) : news.length === 0 ? (
+        <div className="col-span-full text-center py-12 text-slate-400 font-sans">No news found.</div>
+      ) : (
+        news.map((item, idx) => (
+          <Link key={item._id || idx} href={`/news/${item._id}`}>
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="group cursor-pointer h-full"
+            >
+              <div className="bg-white rounded-2xl overflow-hidden h-full flex flex-col border border-slate-200/60 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500">
+                {/* Image Container */}
+                <div className="relative h-52 overflow-hidden bg-slate-100">
+                  {item.image ? (
+                    <img
+                      src={getImageUrl(item.image)}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm bg-gradient-to-br from-slate-50 to-slate-100">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-12 h-12 rounded-full bg-slate-200/50 flex items-center justify-center">
+                          <Calendar className="w-6 h-6 text-slate-400" />
+                        </div>
+                        <span>Image coming soon</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Category Badge - Top Left */}
+                  <div className="absolute top-4 left-4">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/95 backdrop-blur-sm text-slate-800 shadow-sm border border-slate-200/50">
+                      {item.category || "News"}
+                    </span>
+                  </div>
+                  
+                  {/* Date Badge - Bottom Left */}
+                  <div className="absolute bottom-4 left-4">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-medium">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {formatDisplayDate(item.date)}
+                    </span>
+                  </div>
+                  
+                  {/* Share Button - Top Right */}
+                  <button 
+                    onClick={(e) => handleCardShare(e, item._id, item.title)}
+                    className="absolute top-4 right-4 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white text-slate-600 hover:text-primary shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/50"
+                    title="Share News"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors font-display leading-snug line-clamp-2">
+                    {item.title}
+                  </h3>
+                  
+                  <p className="text-slate-500 font-light text-sm leading-relaxed mb-4 line-clamp-3 flex-grow font-sans">
+                    {item.description}
+                  </p>
+                  
+                  {/* Footer with Read More */}
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                    <span className="text-primary font-semibold text-sm inline-flex items-center group-hover:gap-2 transition-all duration-300">
+                      Read more
+                      <ArrowRight className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1.5 transition-transform duration-300" />
+                    </span>
+                    
+                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+                      <span>{formatDisplayDate(item.date)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </Link>
+        ))
+      )}
+    </div>
+  </div>
+</motion.section>
+
       {/* LOCATION MAP SECTION */}
       <LocationMap />
 
       {/* CTA SECTION */}
-      <motion.section 
+      {/* <motion.section 
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
@@ -737,7 +1045,7 @@ export default function Home() {
             </Link>
           </motion.div>
         </div>
-      </motion.section>
+      </motion.section> */}
     </PageTransition>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Switch, Route, useLocation, Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -50,6 +50,7 @@ import AdminNews from "./admin/News";
 import AdminAdmissions from "./admin/Admissions";
 import AdminModelImage from "./admin/ModelImage";
 import AdminGallery from "./admin/Gallery";
+import AdminSlider from "./admin/Slider";
 import ModelImageUpload from "@/components/ModelImageUpload";
 
 const ADMIN_PASSWORD = "admin@nepalaya2025";
@@ -86,7 +87,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8 space-y-6">
         <div className="flex flex-col items-center gap-2">
           <div className="w-14 h-14 rounded-3xl overflow-hidden bg-white shadow-xl">
-            <img src="/images/nepalayalogo.jpeg" alt="Nepalaya Logo" className="w-full h-full object-cover" />
+            <img src="/images/nepalayalogo.png" alt="Nepalaya Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-xl font-bold text-slate-900">Admin Portal</h1>
           <p className="text-sm text-slate-500">Nepalaya Educational Foundation</p>
@@ -106,7 +107,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
               <p className="text-xs text-red-600">Incorrect password. Try again.</p>
             )}
           </div>
-          <Button type="submit" className="w-full bg-gradient-to-r from-primary to-violet-600 text-white">
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white">
             Sign In
           </Button>
         </form>
@@ -242,7 +243,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       {/* Header */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white">
+          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white">
             <GraduationCap className="w-5 h-5" />
           </div>
           <div>
@@ -420,6 +421,8 @@ export default function Admin() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem(AUTH_KEY) === "1");
   const [location, setLocation] = useLocation();
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [location]);
+
   const handleLogout = () => {
     sessionStorage.removeItem(AUTH_KEY);
     setAuthed(false);
@@ -436,6 +439,7 @@ export default function Admin() {
     { label: "Gallery", path: "/admin/gallery" },
     { label: "Admissions", path: "/admin/admissions" },
     { label: "Model Image", path: "/admin/model-image" },
+    { label: "Slider", path: "/admin/slider" },
   ];
 
   // Default to dashboard if at /admin
@@ -471,6 +475,7 @@ export default function Admin() {
           <Route path="/admin/gallery" component={AdminGallery} />
           <Route path="/admin/admissions" component={AdminAdmissions} />
           <Route path="/admin/model-image" component={AdminModelImage} />
+          <Route path="/admin/slider" component={AdminSlider} />
           <Route> <div className="p-8">Not found</div> </Route>
         </Switch>
       </main>
