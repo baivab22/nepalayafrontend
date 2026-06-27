@@ -99,7 +99,7 @@ export default function NewsDetail() {
   if (loading) {
     return (
       <PageTransition>
-        <div className="min-h-screen bg-white pt-32 pb-20">
+        <div className="min-h-screen bg-white pt-20 pb-16">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
             <Skeleton className="h-10 w-28 rounded-lg" />
             <Skeleton className="h-12 w-full rounded-xl" />
@@ -127,7 +127,7 @@ export default function NewsDetail() {
   if (!news) {
     return (
       <PageTransition>
-        <div className="min-h-screen bg-white flex items-center justify-center pt-28 pb-20 px-4">
+        <div className="min-h-screen bg-white flex items-center justify-center pt-20 pb-16 px-4">
           <div className="text-center space-y-6 max-w-md">
             <div className="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center mx-auto">
               <Calendar className="w-10 h-10 text-slate-300" />
@@ -136,7 +136,7 @@ export default function NewsDetail() {
             <p className="text-slate-500">This article may have been removed or doesn't exist.</p>
             <Link href="/news">
               <Button className="mt-2 bg-primary text-white hover:bg-primary/95 rounded-full px-8">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back to News
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Events & News
               </Button>
             </Link>
           </div>
@@ -157,7 +157,7 @@ export default function NewsDetail() {
               variant="ghost"
               className="mb-8 text-slate-500 hover:text-primary hover:bg-slate-50 -ml-3 rounded-full"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back to News
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Events & News
             </Button>
           </Link>
 
@@ -220,10 +220,8 @@ export default function NewsDetail() {
 
           {/* Description */}
           <div className="max-w-3xl">
-            <div className="prose prose-slate max-w-none">
-              <p className="text-slate-700 text-lg leading-relaxed whitespace-pre-wrap font-normal">
-                {news.description}
-              </p>
+            <div className="prose prose-slate max-w-none break-words overflow-x-hidden [&_pre]:whitespace-pre-wrap [&_code]:break-words [&_img]:max-w-full [&_img]:h-auto [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block">
+              <div dangerouslySetInnerHTML={{ __html: news.description }} />
             </div>
           </div>
 

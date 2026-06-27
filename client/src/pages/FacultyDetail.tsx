@@ -72,7 +72,7 @@ export default function FacultyDetail() {
   if (loading) {
     return (
       <PageTransition>
-        <div className="pt-28 pb-20">
+        <div className="pt-20 pb-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="animate-pulse space-y-6">
               <div className="h-8 w-48 bg-slate-200 rounded" />
@@ -95,7 +95,7 @@ export default function FacultyDetail() {
   if (!faculty) {
     return (
       <PageTransition>
-        <div className="pt-28 pb-20">
+        <div className="pt-20 pb-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p className="text-slate-500">Faculty member not found.</p>
             <Link href="/faculty" className="text-primary hover:underline mt-4 inline-block">Back to Faculty</Link>
@@ -107,7 +107,7 @@ export default function FacultyDetail() {
 
   return (
     <PageTransition>
-      <div className="pt-28 pb-20 bg-slate-50/50 min-h-screen">
+      <div className="pt-20 pb-16 bg-slate-50/50 min-h-screen">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/faculty" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors mb-8 group">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" strokeWidth={2.5} />
@@ -118,10 +118,10 @@ export default function FacultyDetail() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="grid lg:grid-cols-3 gap-8"
+            className="grid lg:grid-cols-3 gap-6 lg:gap-8"
           >
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden sticky top-28">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden lg:sticky lg:top-28">
                 <div className="aspect-[4/5] bg-slate-100 flex items-center justify-center overflow-hidden">
                   {faculty.photo ? (
                     <img
@@ -195,7 +195,7 @@ export default function FacultyDetail() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
-                  className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8"
+                  className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-8"
                 >
                   <div className="flex items-start gap-4 mb-5">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -206,7 +206,9 @@ export default function FacultyDetail() {
                       <p className="text-sm text-slate-500">Biography & background</p>
                     </div>
                   </div>
-                  <p className="text-slate-600 leading-relaxed text-[15px]">{faculty.description}</p>
+                  <div className="prose prose-slate max-w-none break-words overflow-x-hidden text-slate-600 leading-relaxed text-[15px] [&_pre]:whitespace-pre-wrap [&_code]:break-words [&_img]:max-w-full [&_img]:h-auto">
+                    <div dangerouslySetInnerHTML={{ __html: faculty.description }} />
+                  </div>
                 </motion.div>
               )}
 

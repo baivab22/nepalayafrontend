@@ -41,7 +41,7 @@ export default function Contact() {
 
   return (
     <PageTransition>
-      <div className="pt-28 pb-4">
+      <div className="pt-16 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-4">Contact</p>
@@ -59,7 +59,7 @@ export default function Contact() {
 
       <div className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-16">
+          <div className="grid lg:grid-cols-5 gap-8 lg:gap-16">
 
             <div className="lg:col-span-2 space-y-8">
               <div>
@@ -110,7 +110,7 @@ export default function Contact() {
             </div>
 
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl p-8 border border-slate-200">
+              <div className="bg-white rounded-2xl p-4 sm:p-8 border border-slate-200">
                 <h3 className="text-xl font-bold text-slate-900 mb-6">Send us a message</h3>
 
                 {status === "success" ? (

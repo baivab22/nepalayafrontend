@@ -19,6 +19,8 @@ import FacultyDetail from "@/pages/FacultyDetail";
 import News from "@/pages/News";
 import NewsDetail from "@/pages/NewsDetail";
 import Contact from "@/pages/Contact";
+import Notice from "@/pages/Notice";
+import NoticeDetail from "@/pages/NoticeDetail";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
@@ -103,6 +105,8 @@ function Router() {
               <Route path="/faculty/:id" component={FacultyDetail} />
               <Route path="/news" component={News} />
               <Route path="/news/:id" component={NewsDetail} />
+              <Route path="/notices" component={Notice} />
+              <Route path="/notices/:id" component={NoticeDetail} />
               <Route path="/contact" component={Contact} />
               <Route component={NotFound} />
             </Switch>

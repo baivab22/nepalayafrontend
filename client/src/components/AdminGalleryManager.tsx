@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Trash2, Plus, Eye, X } from "lucide-react";
+import { Upload, Trash2, Eye, X, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface GalleryImage {
   _id: string;
   url: string;
   title?: string;
+  category?: string;
   createdAt?: string;
 }
 
@@ -17,16 +19,22 @@ export function AdminGalleryManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<GalleryImage | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [uploadCategory, setUploadCategory] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
 
   useEffect(() => {
     fetchGalleryImages();
+    fetchCategories();
   }, []);
 
   const fetchGalleryImages = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/gallery`);
+      const url = selectedCategory === "All"
+        ? `${API_URL}/api/gallery`
+        : `${API_URL}/api/gallery?category=${encodeURIComponent(selectedCategory)}`;
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setImages(Array.isArray(data) ? data : data.images || []);
@@ -37,6 +45,22 @@ export function AdminGalleryManager() {
       setLoading(false);
     }
   };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/gallery/categories`);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchGalleryImages();
+  }, [selectedCategory]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -49,6 +73,7 @@ export function AdminGalleryManager() {
         const formData = new FormData();
         formData.append("image", file);
         formData.append("title", file.name.replace(/\.[^/.]+$/, ""));
+        formData.append("category", uploadCategory || "Uncategorized");
 
         const response = await fetch(`${API_URL}/api/gallery`, {
           method: "POST",
@@ -58,11 +83,13 @@ export function AdminGalleryManager() {
         if (response.ok) {
           const newImage = await response.json();
           setImages((prev) => [newImage, ...prev]);
+          if (uploadCategory && !categories.includes(uploadCategory)) {
+            setCategories((prev) => [...prev, uploadCategory].sort());
+          }
         }
       }
     } catch (error) {
       console.error("Error uploading images:", error);
-      alert("Error uploading images");
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -87,22 +114,53 @@ export function AdminGalleryManager() {
       }
     } catch (error) {
       console.error("Error deleting image:", error);
-      alert("Error deleting image");
     }
   };
 
+  const handleCategoryChange = async (image: GalleryImage, newCategory: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/gallery/${image._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: newCategory }),
+      });
+      if (response.ok) {
+        setImages((prev) =>
+          prev.map((img) =>
+            img._id === image._id ? { ...img, category: newCategory } : img
+          )
+        );
+        fetchCategories();
+      }
+    } catch (error) {
+      console.error("Error updating category:", error);
+    }
+  };
+
+  const allCategories = ["All", ...categories];
+
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h2 className="text-3xl font-bold text-slate-900 mb-2">Gallery Manager</h2>
         <p className="text-slate-600">
-          Manage gallery images - add new photos or delete existing ones
+          Upload images with categories and manage your gallery
         </p>
       </div>
 
       {/* Upload Section */}
       <div className="bg-white rounded-xl border-2 border-dashed border-slate-300 p-8 hover:border-blue-500 hover:bg-blue-50 transition-all">
+        <div className="mb-4">
+          <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+            Category for uploads
+          </label>
+          <Input
+            value={uploadCategory}
+            onChange={(e) => setUploadCategory(e.target.value)}
+            placeholder='e.g., "Campus", "Events", "Sports" — leave empty for "Uncategorized"'
+            className="max-w-md"
+          />
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -131,17 +189,37 @@ export function AdminGalleryManager() {
         </button>
       </div>
 
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+        {allCategories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              selectedCategory === cat
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            {cat === "All" ? "All" : cat}
+            {cat !== "All" && (
+              <span className="ml-1.5 text-xs opacity-70">
+                ({categories.filter((c) => c === cat).length + (cat === selectedCategory ? images.filter(i => i.category === cat).length : 0)})
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
       {/* Gallery Grid */}
       <div>
-        <h3 className="text-xl font-bold text-slate-900 mb-4">
-          Current Gallery ({images.length} images)
-        </h3>
-
         {loading ? (
           <div className="text-center py-12 text-slate-500">Loading gallery...</div>
         ) : images.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
-            No images in gallery yet. Upload your first image above.
+            {selectedCategory === "All"
+              ? "No images in gallery yet. Upload your first image above."
+              : `No images in "${selectedCategory}" category.`}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -154,7 +232,6 @@ export function AdminGalleryManager() {
                   exit={{ opacity: 0, scale: 0.8 }}
                   className="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
                 >
-                  {/* Image */}
                   <div className="relative aspect-square overflow-hidden bg-slate-100">
                     <img
                       src={image.url}
@@ -163,7 +240,6 @@ export function AdminGalleryManager() {
                     />
                   </div>
 
-                  {/* Overlay Actions */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                     <button
                       onClick={() => setPreviewImage(image)}
@@ -181,14 +257,19 @@ export function AdminGalleryManager() {
                     </button>
                   </div>
 
-                  {/* Image Info */}
                   <div className="p-3">
                     <p className="text-sm font-medium text-slate-900 truncate">
                       {image.title || "Gallery Image"}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {new Date(image.createdAt || "").toLocaleDateString()}
-                    </p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="inline-flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                        <FolderOpen className="w-3 h-3" />
+                        {image.category || "Uncategorized"}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {new Date(image.createdAt || "").toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -226,10 +307,16 @@ export function AdminGalleryManager() {
                 className="w-full h-auto"
               />
               <div className="p-6">
-                <h3 className="text-lg font-bold text-slate-900">
-                  {previewImage.title}
-                </h3>
-                <p className="text-sm text-slate-600 mt-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {previewImage.title}
+                  </h3>
+                  <span className="inline-flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                    <FolderOpen className="w-3 h-3" />
+                    {previewImage.category || "Uncategorized"}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600">
                   Uploaded: {new Date(previewImage.createdAt || "").toLocaleString()}
                 </p>
               </div>

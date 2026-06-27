@@ -472,7 +472,7 @@ export default function Faculty() {
 
   return (
     <PageTransition>
-      <div className="pt-28 pb-4">
+      <div className="pt-16 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-4">Faculty</p>
@@ -542,11 +542,11 @@ export default function Faculty() {
           </div>
 
           {/* Faculty Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {loading ? (
               Array.from({ length: 6 }).map((_, idx) => (
                 <Card key={idx} className="overflow-hidden border-slate-200">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 sm:p-6">
                     <Skeleton className="w-32 h-32 rounded-full mx-auto mb-4" />
                     <Skeleton className="h-6 w-40 mx-auto mb-2" />
                     <Skeleton className="h-4 w-28 mx-auto mb-4" />

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,23 +16,35 @@ import {
   ChevronLeft, 
   ChevronRight,
   BookOpen,
-  List,
   X,
   Save,
-  Layers,
-  GraduationCap
+  GraduationCap,
+  Clock,
+  Users,
+  AlignLeft,
+  Eye
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
+function stripHtml(html: string) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  return doc.body.textContent || "";
+}
+
+function truncate(text: string, max: number) {
+  if (text.length <= max) return text;
+  return text.slice(0, max) + "...";
+}
 
 interface Program {
   _id: string;
   title: string;
-  items: string[];
-  description?: string;
+  description: string;
+  duration?: string;
+  seats?: number;
   image?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -39,34 +52,47 @@ interface Program {
 
 interface ProgramForm {
   title: string;
-  items: string;
+  description: string;
+  duration: string;
+  seats: string;
   image?: string;
 }
 
-const formatItemsInput = (items: string[]) => {
-  return items.join(", ");
+const quillModules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["blockquote", "code-block"],
+    [{ color: [] }, { background: [] }],
+    ["link"],
+    ["clean"],
+  ],
 };
 
-const parseItemsInput = (itemsString: string): string[] => {
-  return itemsString
-    .split(",")
-    .map(item => item.trim())
-    .filter(item => item.length > 0);
-};
+const quillFormats = [
+  "header",
+  "bold", "italic", "underline", "strike",
+  "list", "bullet",
+  "blockquote", "code-block",
+  "color", "background",
+  "link",
+];
 
 export default function AdminPrograms() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState<ProgramForm>({ title: "", items: "" });
+  const [form, setForm] = useState<ProgramForm>({ title: "", description: "", duration: "", seats: "" });
   const [editing, setEditing] = useState<Program | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [viewingItems, setViewingItems] = useState<Program | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [uploading, setUploading] = useState(false);
-  
+  const [viewingProgram, setViewingProgram] = useState<Program | null>(null);
+  const quillRef = useRef<ReactQuill>(null);
+
   const pageSize = 10;
 
   const fetchPrograms = async () => {
@@ -76,12 +102,14 @@ export default function AdminPrograms() {
       const data = await response.json();
       const raw = Array.isArray(data) ? data : (data?.programs || []);
       const normalized: Program[] = raw.map((p: any) => ({
-        ...p,
-        items: Array.isArray(p.items)
-          ? p.items
-          : p.description
-            ? parseItemsInput(p.description)
-            : [],
+        _id: p._id,
+        title: p.title,
+        description: p.description || "",
+        duration: p.duration || "",
+        seats: p.seats,
+        image: p.image,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
       }));
       setPrograms(normalized);
       toast.success("Programs loaded successfully");
@@ -99,49 +127,51 @@ export default function AdminPrograms() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const itemsArray = parseItemsInput(form.items);
-    
-    if (itemsArray.length === 0) {
-      toast.error("Please add at least one item");
+
+    if (!form.description || stripHtml(form.description).trim().length < 2) {
+      toast.error("Description must have at least 2 characters");
       return;
     }
-    
+
     setUploading(true);
-    
+
     try {
       let imageUrl = form.image || "";
-      
+
       if (imageFile) {
         const uploadFormData = new FormData();
         uploadFormData.append("image", imageFile);
-        
+
         const uploadRes = await fetch(`${API_URL}/api/programs/upload-image`, {
           method: "POST",
           body: uploadFormData,
         });
-        
+
         if (!uploadRes.ok) throw new Error("Image upload failed");
-        
+
         const uploadData = await uploadRes.json();
         imageUrl = uploadData.url;
       }
-      
+
       const method = editing ? "PUT" : "POST";
       const url = editing ? `${API_URL}/api/programs/${editing._id}` : `${API_URL}/api/programs`;
-      
+
+      const body: Record<string, unknown> = {
+        title: form.title,
+        description: form.description,
+      };
+      if (form.duration) body.duration = form.duration;
+      if (form.seats) body.seats = Number(form.seats);
+      if (imageUrl) body.image = imageUrl;
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          title: form.title, 
-          description: form.items,
-          image: imageUrl,
-        })
+        body: JSON.stringify(body),
       });
-      
+
       if (!response.ok) throw new Error("Save failed");
-      
+
       toast.success(editing ? "Program updated successfully" : "Program added successfully");
       resetForm();
       setModalOpen(false);
@@ -156,9 +186,11 @@ export default function AdminPrograms() {
 
   const handleEdit = (prog: Program) => {
     setEditing(prog);
-    setForm({ 
-      title: prog.title, 
-      items: formatItemsInput(prog.items || []),
+    setForm({
+      title: prog.title,
+      description: prog.description || "",
+      duration: prog.duration || "",
+      seats: prog.seats ? String(prog.seats) : "",
       image: prog.image || "",
     });
     if (prog.image) {
@@ -170,11 +202,11 @@ export default function AdminPrograms() {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this program? All associated data will be removed.")) return;
-    
+
     try {
       const response = await fetch(`${API_URL}/api/programs/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Delete failed");
-      
+
       toast.success("Program deleted successfully");
       fetchPrograms();
     } catch (error) {
@@ -184,18 +216,17 @@ export default function AdminPrograms() {
   };
 
   const resetForm = () => {
-    setForm({ title: "", items: "", image: "" });
+    setForm({ title: "", description: "", duration: "", seats: "", image: "" });
     setEditing(null);
     setImageFile(null);
     setImagePreview("");
   };
 
-  // Filtering and pagination
   const filtered = programs.filter(prog =>
     prog.title.toLowerCase().includes(search.toLowerCase()) ||
-    (prog.items || []).some(item => item.toLowerCase().includes(search.toLowerCase()))
+    stripHtml(prog.description).toLowerCase().includes(search.toLowerCase())
   );
-  
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
@@ -204,18 +235,15 @@ export default function AdminPrograms() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const getItemCount = (items: string[]) => {
-    return items.length;
-  };
-
-  const getPreviewItems = (items: string[], maxItems: number = 3) => {
-    return items.slice(0, maxItems);
+  const getDescriptionExcerpt = (html: string, max = 120) => {
+    const text = stripHtml(html);
+    return truncate(text, max);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
+        {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -224,7 +252,7 @@ export default function AdminPrograms() {
           <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold text-slate-900">Programs Management</h1>
-              <p className="text-slate-500 mt-1">Manage academic programs, courses, and their curriculum details</p>
+              <p className="text-slate-500 mt-1">Manage academic programs, duration, seats, and descriptions</p>
             </div>
             <Button 
               onClick={() => {
@@ -239,7 +267,7 @@ export default function AdminPrograms() {
           </div>
         </motion.div>
 
-        {/* Search Section */}
+        {/* Search */}
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -250,14 +278,14 @@ export default function AdminPrograms() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input 
               className="pl-10 bg-white border-slate-200" 
-              placeholder="Search programs by title or curriculum items..." 
+              placeholder="Search programs by title or description..." 
               value={search} 
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
         </motion.div>
 
-        {/* Programs Grid */}
+        {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             Array.from({ length: 6 }).map((_, i) => (
@@ -265,10 +293,10 @@ export default function AdminPrograms() {
                 <Skeleton className="h-52 w-full rounded-none" />
                 <CardContent className="p-5 space-y-3">
                   <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-5 w-1/2" />
-                  <div className="flex gap-1.5 pt-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <div className="flex gap-2 pt-2">
                     <Skeleton className="h-6 w-20 rounded-md" />
-                    <Skeleton className="h-6 w-24 rounded-md" />
                     <Skeleton className="h-6 w-16 rounded-md" />
                   </div>
                 </CardContent>
@@ -300,7 +328,7 @@ export default function AdminPrograms() {
                   transition={{ delay: idx * 0.05 }}
                 >
                   <Card className="group relative overflow-hidden border-slate-200/60 bg-white shadow-sm hover:shadow-xl transition-all duration-500 h-full flex flex-col">
-                    {/* Image Section */}
+                    {/* Image */}
                     <div className={`relative w-full h-52 overflow-hidden ${!prog.image ? "bg-gradient-to-br from-slate-100 to-slate-200" : "bg-slate-100"}`}>
                       {prog.image ? (
                         <img 
@@ -314,24 +342,24 @@ export default function AdminPrograms() {
                           <GraduationCap className="w-16 h-16 text-slate-300" />
                         </div>
                       )}
-                      {/* Gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      {/* Item count badge */}
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0 font-medium">
-                          <BookOpen className="w-3 h-3 mr-1" />
-                          {getItemCount(prog.items)}
-                        </Badge>
+                      <div className="absolute top-3 right-3 flex gap-2">
+                        {prog.seats && (
+                          <Badge className="bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0 font-medium">
+                            <Users className="w-3 h-3 mr-1" />
+                            {prog.seats} seats
+                          </Badge>
+                        )}
                       </div>
-                      {/* Hover actions overlay */}
+                      {/* Hover actions */}
                       <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
                         <Button 
                           size="icon"
                           variant="secondary" 
-                          onClick={() => setViewingItems(prog)}
+                          onClick={() => setViewingProgram(prog)}
                           className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg"
                         >
-                          <BookOpen className="w-4 h-4 text-slate-700" />
+                          <Eye className="w-4 h-4 text-slate-700" />
                         </Button>
                         <Button 
                           size="icon"
@@ -351,45 +379,33 @@ export default function AdminPrograms() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Content */}
                     <CardContent className="p-5 flex-1 flex flex-col">
-                      {/* Title */}
-                      <h3 className="font-bold text-lg text-slate-900 mb-3 leading-snug line-clamp-2">
+                      <h3 className="font-bold text-lg text-slate-900 mb-2 leading-snug line-clamp-2">
                         {prog.title}
                       </h3>
-                      
-                      {/* Items as tags */}
-                      <div className="flex-1">
-                        <div className="flex flex-wrap gap-1.5">
-                          {getPreviewItems(prog.items, 4).map((item, i) => (
-                            <span 
-                              key={i} 
-                              className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-50 text-slate-600 text-xs font-medium border border-slate-200/60"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                          {prog.items.length > 4 && (
-                            <button
-                              onClick={() => setViewingItems(prog)}
-                              className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium text-primary bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors cursor-pointer"
-                            >
-                              +{prog.items.length - 4}
-                            </button>
-                          )}
+
+                      <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 mb-3 flex-1">
+                        {getDescriptionExcerpt(prog.description, 150)}
+                      </p>
+
+                      {/* Meta */}
+                      <div className="flex items-center gap-3 pt-3 mt-auto border-t border-slate-100">
+                        <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                          <Clock className="w-3.5 h-3.5" />
+                          {prog.duration || "N/A"}
                         </div>
-                        {prog.items.length === 0 && (
-                          <p className="text-xs text-slate-400 italic">No curriculum items</p>
+                        <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                          <Users className="w-3.5 h-3.5" />
+                          {prog.seats ? `${prog.seats} seats` : "N/A"}
+                        </div>
+                        {prog.createdAt && (
+                          <span className="ml-auto text-xs text-slate-400">
+                            {new Date(prog.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </span>
                         )}
                       </div>
-                      
-                      {/* Bottom meta */}
-                      {prog.createdAt && (
-                        <div className="flex items-center gap-1.5 pt-4 mt-3 border-t border-slate-100 text-xs text-slate-400">
-                          <span>Added {new Date(prog.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -429,9 +445,7 @@ export default function AdminPrograms() {
                   } else {
                     pageNum = page - 2 + i;
                   }
-                  
                   if (pageNum > totalPages || pageNum < 1) return null;
-                  
                   return (
                     <Button
                       key={pageNum}
@@ -458,19 +472,20 @@ export default function AdminPrograms() {
         )}
       </div>
 
-      {/* Add/Edit Program Modal */}
+      {/* Add/Edit Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <h2 className="text-2xl font-bold">
               {editing ? "Edit Program" : "Add New Program"}
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              {editing ? "Update program details and curriculum" : "Create a new academic program with its curriculum"}
+              {editing ? "Update program details" : "Create a new academic program"}
             </p>
           </DialogHeader>
-          
+
           <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+            {/* Title */}
             <div>
               <Label htmlFor="title" className="text-sm font-semibold mb-2 block">
                 Program Title <span className="text-red-500">*</span>
@@ -487,26 +502,62 @@ export default function AdminPrograms() {
                 />
               </div>
             </div>
-            
+
+            {/* Duration & Seats row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="duration" className="text-sm font-semibold mb-2 block">
+                  Duration
+                </Label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    id="duration"
+                    value={form.duration}
+                    onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
+                    placeholder="e.g., 4 Years"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="seats" className="text-sm font-semibold mb-2 block">
+                  Seats Available
+                </Label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    id="seats"
+                    type="number"
+                    min={0}
+                    value={form.seats}
+                    onChange={e => setForm(f => ({ ...f, seats: e.target.value }))}
+                    placeholder="e.g., 60"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Rich Text Description */}
             <div>
-              <Label htmlFor="items" className="text-sm font-semibold mb-2 block">
-                Curriculum Items <span className="text-red-500">*</span>
+              <Label htmlFor="description" className="text-sm font-semibold mb-2 block">
+                Description <span className="text-red-500">*</span>
               </Label>
-              <div className="relative">
-                <List className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                <Textarea
-                  id="items"
-                  value={form.items}
-                  onChange={e => setForm(f => ({ ...f, items: e.target.value }))}
-                  required
-                  placeholder="Enter curriculum items separated by commas&#10;e.g., Data Structures, Algorithms, Database Systems, Web Development"
-                  rows={6}
-                  className="pl-10 resize-none font-mono text-sm"
+              <div className="border border-slate-200 rounded-lg overflow-hidden [&_.ql-editor]:min-h-[200px] [&_.ql-editor]:text-sm [&_.ql-toolbar]:border-t-0 [&_.ql-toolbar]:border-x-0 [&_.ql-container]:border-0">
+                <ReactQuill
+                  ref={quillRef}
+                  theme="snow"
+                  value={form.description}
+                  onChange={(value) => setForm(f => ({ ...f, description: value }))}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Describe the program, curriculum, learning outcomes..."
                 />
               </div>
               <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
-                Separate items with commas. Each item will be displayed as a bullet point.
+                <AlignLeft className="w-3 h-3" />
+                Use the editor to format your description with headings, lists, and styling.
               </p>
             </div>
 
@@ -550,11 +601,7 @@ export default function AdminPrograms() {
               </div>
               {imagePreview && (
                 <div className="mt-3 rounded-lg overflow-hidden border border-slate-200 w-48 h-32">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                 </div>
               )}
               <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
@@ -562,32 +609,7 @@ export default function AdminPrograms() {
                 Upload an image to represent this program. Recommended size: 1200x600px.
               </p>
             </div>
-            
-            {/* Preview Section */}
-            {form.items && parseItemsInput(form.items).length > 0 && (
-              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                <p className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                  <Layers className="w-4 h-4" />
-                  Preview ({parseItemsInput(form.items).length} items)
-                </p>
-                <div className="max-h-40 overflow-y-auto">
-                  <ul className="space-y-1">
-                    {parseItemsInput(form.items).slice(0, 10).map((item, idx) => (
-                      <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                    {parseItemsInput(form.items).length > 10 && (
-                      <li className="text-sm text-slate-400 italic">
-                        + {parseItemsInput(form.items).length - 10} more items
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            )}
-            
+
             <DialogFooter className="gap-2 pt-4">
               <Button 
                 type="button" 
@@ -612,64 +634,57 @@ export default function AdminPrograms() {
         </DialogContent>
       </Dialog>
 
-      {/* View All Items Modal */}
-      <Dialog open={!!viewingItems} onOpenChange={open => { if (!open) setViewingItems(null); }}>
-        <DialogContent className="max-w-2xl">
+      {/* View Description Modal */}
+      <Dialog open={!!viewingProgram} onOpenChange={open => { if (!open) setViewingProgram(null); }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-gradient-to-br from-primary/10 to-sky-500/10 rounded-lg">
                 <GraduationCap className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">{viewingItems?.title}</h2>
-                <p className="text-sm text-slate-500">Complete Curriculum Overview</p>
+                <h2 className="text-2xl font-bold">{viewingProgram?.title}</h2>
+                <p className="text-sm text-slate-500">Program Overview</p>
               </div>
             </div>
           </DialogHeader>
-          
-          {viewingItems && (
+
+          {viewingProgram && (
             <div className="space-y-4">
-              {viewingItems.image && (
+              {viewingProgram.image && (
                 <div className="w-full h-48 rounded-lg overflow-hidden bg-slate-100">
                   <img
-                    src={`${API_URL}${viewingItems.image}`}
-                    alt={viewingItems.title}
+                    src={`${API_URL}${viewingProgram.image}`}
+                    alt={viewingProgram.title}
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                   />
                 </div>
               )}
-              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-primary" />
-                  <span className="font-semibold text-slate-700">Total Items:</span>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    {viewingItems.items.length}
+
+              <div className="flex flex-wrap items-center gap-4 border-b border-slate-200 pb-3">
+                {viewingProgram.duration && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-0 gap-1">
+                    <Clock className="w-3 h-3" />
+                    {viewingProgram.duration}
                   </Badge>
-                </div>
+                )}
+                {viewingProgram.seats && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-0 gap-1">
+                    <Users className="w-3 h-3" />
+                    {viewingProgram.seats} seats
+                  </Badge>
+                )}
               </div>
-              
-              <div className="max-h-96 overflow-y-auto pr-2">
-                <ul className="space-y-2">
-                  {viewingItems.items.map((item, idx) => (
-                    <motion.li 
-                      key={idx}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.02 }}
-                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors"
-                    >
-                      <span className="text-primary font-semibold min-w-[24px]">{idx + 1}.</span>
-                      <span className="text-slate-700">{item}</span>
-                    </motion.li>
-                  ))}
-                </ul>
+
+              <div className="prose prose-sm max-w-none text-slate-700">
+                <div dangerouslySetInnerHTML={{ __html: viewingProgram.description }} />
               </div>
             </div>
           )}
-          
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewingItems(null)}>
+            <Button variant="outline" onClick={() => setViewingProgram(null)}>
               Close
             </Button>
           </DialogFooter>

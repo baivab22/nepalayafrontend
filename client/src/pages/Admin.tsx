@@ -47,6 +47,7 @@ import AdminDashboard from "./admin/Dashboard";
 import AdminPrograms from "./admin/Programs";
 import AdminFaculty from "./admin/Faculty";
 import AdminNews from "./admin/News";
+import AdminNotice from "./admin/Notice";
 import AdminAdmissions from "./admin/Admissions";
 import AdminModelImage from "./admin/ModelImage";
 import AdminGallery from "./admin/Gallery";
@@ -436,6 +437,7 @@ export default function Admin() {
     { label: "Programs", path: "/admin/programs" },
     { label: "Faculty", path: "/admin/faculty" },
     { label: "News", path: "/admin/news" },
+    { label: "Notices", path: "/admin/notices" },
     { label: "Gallery", path: "/admin/gallery" },
     { label: "Admissions", path: "/admin/admissions" },
     { label: "Model Image", path: "/admin/model-image" },
@@ -472,6 +474,7 @@ export default function Admin() {
           <Route path="/admin/programs" component={AdminPrograms} />
           <Route path="/admin/faculty" component={AdminFaculty} />
           <Route path="/admin/news" component={AdminNews} />
+          <Route path="/admin/notices" component={AdminNotice} />
           <Route path="/admin/gallery" component={AdminGallery} />
           <Route path="/admin/admissions" component={AdminAdmissions} />
           <Route path="/admin/model-image" component={AdminModelImage} />

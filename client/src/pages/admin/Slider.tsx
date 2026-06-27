@@ -18,6 +18,11 @@ interface Slide {
   type: "image" | "video";
   order: number;
   active: boolean;
+  title: string;
+  subtitle: string;
+  description: string;
+  ctaText: string;
+  ctaLink: string;
   createdAt?: string;
 }
 
@@ -30,6 +35,11 @@ export default function AdminSlider() {
   const [mediaPreview, setMediaPreview] = useState<string>("");
   const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [uploading, setUploading] = useState(false);
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [ctaText, setCtaText] = useState("");
+  const [ctaLink, setCtaLink] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const fetchSlides = async () => {
@@ -76,7 +86,7 @@ export default function AdminSlider() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ media: mediaUrl, type, order: editing?.order ?? slides.length, active: editing?.active ?? true }),
+        body: JSON.stringify({ media: mediaUrl, type, order: editing?.order ?? slides.length, active: editing?.active ?? true, title, subtitle, description, ctaText, ctaLink }),
       });
       if (!res.ok) throw new Error("Save failed");
       toast.success(editing ? "Slide updated" : "Slide created");
@@ -95,6 +105,11 @@ export default function AdminSlider() {
     setMediaPreview(`${API_URL}${slide.media}`);
     setMediaType(slide.type);
     setMediaFile(null);
+    setTitle(slide.title ?? "");
+    setSubtitle(slide.subtitle ?? "");
+    setDescription(slide.description ?? "");
+    setCtaText(slide.ctaText ?? "");
+    setCtaLink(slide.ctaLink ?? "");
     setModalOpen(true);
   };
 
@@ -153,6 +168,11 @@ export default function AdminSlider() {
     setMediaFile(null);
     setMediaPreview("");
     setMediaType("image");
+    setTitle("");
+    setSubtitle("");
+    setDescription("");
+    setCtaText("");
+    setCtaLink("");
   };
 
   return (
@@ -310,6 +330,32 @@ export default function AdminSlider() {
                 )}
               </div>
             )}
+
+            <div>
+              <Label className="text-sm font-semibold mb-1 block">Title</Label>
+              <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Welcome to Nepalaya" className="h-10" />
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold mb-1 block">Subtitle</Label>
+              <Input value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="e.g. Empowering minds since 1984" className="h-10" />
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold mb-1 block">Description</Label>
+              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="A short description for this slide..." rows={2} className="w-full min-h-[80px] rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary resize-none" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-semibold mb-1 block">CTA Button Text</Label>
+                <Input value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder="e.g. Apply Now" className="h-10" />
+              </div>
+              <div>
+                <Label className="text-sm font-semibold mb-1 block">CTA Button Link</Label>
+                <Input value={ctaLink} onChange={e => setCtaLink(e.target.value)} placeholder="e.g. /admissions" className="h-10" />
+              </div>
+            </div>
 
             <DialogFooter className="gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => { setModalOpen(false); resetForm(); }}>Cancel</Button>

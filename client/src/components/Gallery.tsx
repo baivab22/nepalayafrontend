@@ -1,393 +1,12 @@
-// import { useState, useEffect } from "react";
-// import { motion, AnimatePresence } from "framer-motion";
-// import { ChevronLeft, ChevronRight, X, Fullscreen } from "lucide-react";
-
-// interface GalleryImage {
-//   _id: string;
-//   url: string;
-//   title?: string;
-//   createdAt?: string;
-// }
-
-// const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
-
-// const container = {
-//   hidden: { opacity: 0 },
-//   visible: {
-//     opacity: 1,
-//     transition: {
-//       staggerChildren: 0.1,
-//       delayChildren: 0.2,
-//     },
-//   },
-// };
-
-// const item = {
-//   hidden: { opacity: 0, y: 20 },
-//   visible: {
-//     opacity: 1,
-//     y: 0,
-//     transition: {
-//       duration: 0.6,
-//     },
-//   },
-// };
-
-// export function Gallery() {
-//   const [images, setImages] = useState<GalleryImage[]>([]);
-//   const [currentIndex, setCurrentIndex] = useState(0);
-//   const [isFullscreen, setIsFullscreen] = useState(false);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     fetchGalleryImages();
-//   }, []);
-
-//   const fetchGalleryImages = async () => {
-//     try {
-//       const response = await fetch(`${API_URL}/api/gallery`);
-//       if (response.ok) {
-//         const data = await response.json();
-//         setImages(Array.isArray(data) ? data : data.images || []);
-//       }
-//     } catch (error) {
-//       console.error("Error fetching gallery images:", error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const nextImage = () => {
-//     setCurrentIndex((prev) => (prev + 1) % images.length);
-//   };
-
-//   const prevImage = () => {
-//     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-//   };
-
-//   if (loading) {
-//     return (
-//       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-slate-50">
-//         <div className="max-w-7xl mx-auto text-center">
-//           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-//           <p className="text-slate-500 mt-4">Loading gallery...</p>
-//         </div>
-//       </section>
-//     );
-//   }
-
-//   if (images.length === 0) {
-//     return null;
-//   }
-
-//   const currentImage = images[currentIndex];
-
-//   return (
-//     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-slate-50">
-//       <div className="max-w-7xl mx-auto">
-//         {/* Section Header */}
-//         <motion.div
-//           initial={{ opacity: 0, y: 20 }}
-//           whileInView={{ opacity: 1, y: 0 }}
-//           viewport={{ once: true }}
-//           className="text-center mb-20"
-//         >
-//           <motion.h4 
-//             initial={{ opacity: 0 }}
-//             whileInView={{ opacity: 1 }}
-//             viewport={{ once: true }}
-//             className="text-blue-600 font-bold uppercase tracking-widest text-sm mb-3"
-//           >
-//             Photo Gallery
-//           </motion.h4>
-//           <h2 className="text-5xl md:text-6xl font-display font-black text-slate-900 mb-4">
-//             Moments from Campus
-//           </h2>
-//           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-//             Explore the vibrant campus life, academic activities, and memorable moments from Nepalaya School
-//           </p>
-//         </motion.div>
-
-//         {/* Featured Hero Image with Slider */}
-//         <motion.div
-//           initial={{ opacity: 0, scale: 0.95 }}
-//           whileInView={{ opacity: 1, scale: 1 }}
-//           viewport={{ once: true }}
-//           transition={{ duration: 0.6 }}
-//           className="relative mb-16 group"
-//         >
-//           <div className="relative rounded-3xl overflow-hidden bg-slate-900 shadow-2xl">
-//             {/* Main Image */}
-//             <AnimatePresence mode="wait">
-//               <motion.div
-//                 key={currentIndex}
-//                 initial={{ opacity: 0 }}
-//                 animate={{ opacity: 1 }}
-//                 exit={{ opacity: 0 }}
-//                 transition={{ duration: 0.5 }}
-//                 className="relative aspect-video w-full overflow-hidden cursor-pointer"
-//                 onClick={() => setIsFullscreen(true)}
-//               >
-//                 <img
-//                   src={currentImage.url}
-//                   alt={currentImage.title || `Gallery image ${currentIndex + 1}`}
-//                   className="w-full h-full object-cover"
-//                 />
-//                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-//                 <motion.div
-//                   initial={{ scale: 0, opacity: 0 }}
-//                   animate={{ scale: 1, opacity: 1 }}
-//                   transition={{ delay: 0.3 }}
-//                   className="absolute inset-0 flex items-center justify-center"
-//                 >
-//                   <motion.button
-//                     whileHover={{ scale: 1.1 }}
-//                     whileTap={{ scale: 0.95 }}
-//                     onClick={() => setIsFullscreen(true)}
-//                     className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-4 rounded-full transition-all duration-300 border border-white/30"
-//                   >
-//                     <Fullscreen className="w-8 h-8" />
-//                   </motion.button>
-//                 </motion.div>
-//               </motion.div>
-//             </AnimatePresence>
-
-//             {/* Navigation Buttons */}
-//             <motion.button
-//               onClick={prevImage}
-//               whileHover={{ scale: 1.1 }}
-//               whileTap={{ scale: 0.95 }}
-//               className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-slate-900 p-3 rounded-full shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100"
-//               aria-label="Previous image"
-//             >
-//               <ChevronLeft className="w-6 h-6" />
-//             </motion.button>
-//             <motion.button
-//               onClick={nextImage}
-//               whileHover={{ scale: 1.1 }}
-//               whileTap={{ scale: 0.95 }}
-//               className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-slate-900 p-3 rounded-full shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100"
-//               aria-label="Next image"
-//             >
-//               <ChevronRight className="w-6 h-6" />
-//             </motion.button>
-
-//             {/* Image Counter */}
-//             <motion.div 
-//               initial={{ opacity: 0 }}
-//               animate={{ opacity: 1 }}
-//               className="absolute bottom-4 right-4 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-medium backdrop-blur-sm"
-//             >
-//               {currentIndex + 1} / {images.length}
-//             </motion.div>
-//           </div>
-//         </motion.div>
-
-//         {/* Thumbnail Strip */}
-//         <div className="mb-16 overflow-x-auto scrollbar-hide">
-//           <div className="flex gap-3 min-w-min px-1 py-4">
-//             {images.map((image, idx) => (
-//               <motion.button
-//                 key={image._id}
-//                 onClick={() => setCurrentIndex(idx)}
-//                 whileHover={{ scale: 1.08 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 initial={{ opacity: 0, y: 20 }}
-//                 whileInView={{ opacity: 1, y: 0 }}
-//                 viewport={{ once: true }}
-//                 transition={{ delay: idx * 0.05 }}
-//                 className={`relative flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden border-3 transition-all duration-300 ${
-//                   idx === currentIndex
-//                     ? "border-blue-500 shadow-lg ring-2 ring-blue-300"
-//                     : "border-slate-200 hover:border-blue-300"
-//                 }`}
-//               >
-//                 <img
-//                   src={image.url}
-//                   alt={`Thumbnail ${idx + 1}`}
-//                   className="w-full h-full object-cover"
-//                 />
-//                 {idx === currentIndex && (
-//                   <motion.div 
-//                     layoutId="highlight"
-//                     className="absolute inset-0 bg-blue-500/20"
-//                   />
-//                 )}
-//               </motion.button>
-//             ))}
-//           </div>
-//         </div>
-
-//         {/* Grid Gallery */}
-//         <motion.div
-//           variants={container}
-//           initial="hidden"
-//           whileInView="visible"
-//           viewport={{ once: true, margin: "-100px" }}
-//           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-//         >
-//           {images.slice(0, 12).map((image, idx) => (
-//             <motion.div
-//               key={image._id}
-//               variants={item}
-//               onClick={() => {
-//                 setCurrentIndex(images.indexOf(image));
-//                 window.scrollTo({ top: 0, behavior: "smooth" });
-//               }}
-//               whileHover={{ y: -10 }}
-//               className="group relative cursor-pointer h-64 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300"
-//             >
-//               <img
-//                 src={image.url}
-//                 alt={image.title || `Gallery ${idx + 1}`}
-//                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
-//               />
-
-//               {/* Hover Overlay */}
-//               <motion.div
-//                 initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-//                 whileHover={{ opacity: 1, backdropFilter: "blur(4px)" }}
-//                 transition={{ duration: 0.3 }}
-//                 className="absolute inset-0 bg-black/40 flex items-center justify-center"
-//               >
-//                 <motion.div
-//                   initial={{ scale: 0, rotate: -180 }}
-//                   whileHover={{ scale: 1, rotate: 0 }}
-//                   transition={{ duration: 0.4, type: "spring", stiffness: 300, damping: 30 }}
-//                   className="flex gap-3"
-//                 >
-//                   <motion.button
-//                     whileHover={{ scale: 1.1 }}
-//                     whileTap={{ scale: 0.95 }}
-//                     onClick={(e) => {
-//                       e.stopPropagation();
-//                       setCurrentIndex(images.indexOf(image));
-//                       setIsFullscreen(true);
-//                     }}
-//                     className="bg-white/90 hover:bg-white text-slate-900 p-3 rounded-full shadow-lg transition-all"
-//                   >
-//                     <Fullscreen className="w-5 h-5" />
-//                   </motion.button>
-//                 </motion.div>
-//               </motion.div>
-
-//               {/* Corner Badge */}
-//               <motion.div
-//                 initial={{ opacity: 0, x: -20 }}
-//                 whileHover={{ opacity: 1, x: 0 }}
-//                 className="absolute top-3 right-3 bg-blue-600 text-white px-2 py-1 rounded-lg text-xs font-bold"
-//               >
-//                 #{idx + 1}
-//               </motion.div>
-//             </motion.div>
-//           ))}
-//         </motion.div>
-
-//         {/* View All Button */}
-//         {images.length > 12 && (
-//           <motion.div
-//             initial={{ opacity: 0, y: 20 }}
-//             whileInView={{ opacity: 1, y: 0 }}
-//             viewport={{ once: true }}
-//             className="mt-16 text-center"
-//           >
-//             <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-lg">
-//               View All {images.length} Photos
-//             </button>
-//           </motion.div>
-//         )}
-//       </div>
-
-//       {/* Fullscreen Modal */}
-//       <AnimatePresence>
-//         {isFullscreen && (
-//           <motion.div
-//             initial={{ opacity: 0 }}
-//             animate={{ opacity: 1 }}
-//             exit={{ opacity: 0 }}
-//             onClick={() => setIsFullscreen(false)}
-//             className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4"
-//           >
-//             {/* Close Button */}
-//             <motion.button
-//               initial={{ opacity: 0, scale: 0.8 }}
-//               animate={{ opacity: 1, scale: 1 }}
-//               exit={{ opacity: 0, scale: 0.8 }}
-//               onClick={() => setIsFullscreen(false)}
-//               className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-colors backdrop-blur-md"
-//             >
-//               <X className="w-6 h-6" />
-//             </motion.button>
-
-//             {/* Image Container */}
-//             <div className="relative w-full h-full flex items-center justify-center">
-//               <AnimatePresence mode="wait">
-//                 <motion.img
-//                   key={currentIndex}
-//                   src={currentImage.url}
-//                   alt={currentImage.title}
-//                   initial={{ scale: 0.8, opacity: 0 }}
-//                   animate={{ scale: 1, opacity: 1 }}
-//                   exit={{ scale: 0.8, opacity: 0 }}
-//                   transition={{ duration: 0.3 }}
-//                   className="max-w-full max-h-full object-contain"
-//                 />
-//               </AnimatePresence>
-
-//               {/* Fullscreen Navigation */}
-//               <motion.button
-//                 whileHover={{ scale: 1.1 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={(e) => {
-//                   e.stopPropagation();
-//                   prevImage();
-//                 }}
-//                 className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-4 rounded-full transition-colors backdrop-blur-md"
-//               >
-//                 <ChevronLeft className="w-8 h-8" />
-//               </motion.button>
-//               <motion.button
-//                 whileHover={{ scale: 1.1 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={(e) => {
-//                   e.stopPropagation();
-//                   nextImage();
-//                 }}
-//                 className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-4 rounded-full transition-colors backdrop-blur-md"
-//               >
-//                 <ChevronRight className="w-8 h-8" />
-//               </motion.button>
-
-//               {/* Image Info */}
-//               <motion.div
-//                 initial={{ opacity: 0, y: 20 }}
-//                 animate={{ opacity: 1, y: 0 }}
-//                 className="absolute bottom-4 left-4 text-white"
-//               >
-//                 <p className="text-lg font-bold">
-//                   {currentIndex + 1} / {images.length}
-//                 </p>
-//                 {currentImage.title && (
-//                   <p className="text-sm text-white/80 mt-1">{currentImage.title}</p>
-//                 )}
-//               </motion.div>
-//             </div>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
-//     </section>
-//   );
-// }
-
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useScroll } from "framer-motion";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, X, FolderOpen, ImageIcon } from "lucide-react";
 
 interface GalleryImage {
   _id: string;
   url: string;
   title?: string;
-  description?: string;
+  category?: string;
   createdAt?: string;
 }
 
@@ -395,30 +14,55 @@ const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export function Gallery() {
   const [images, setImages] = useState<GalleryImage[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState("All");
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
 
   useEffect(() => {
-    fetchGalleryImages();
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    fetchCategories();
+    fetchAllImages();
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = scrollYProgress.on("change", setScrollProgress);
-    return unsubscribe;
-  }, [scrollYProgress]);
+  const fetchAllImages = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/gallery`);
+      if (res.ok) {
+        const data = await res.json();
+        setImages(Array.isArray(data) ? data : data.images || []);
+      }
+    } catch (err) {
+      console.error("Error fetching gallery:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/gallery/categories`);
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
+  const filteredImages =
+    activeCategory === "All"
+      ? images
+      : images.filter((img) => img.category === activeCategory);
+
+  const nextImage = useCallback(() => {
+    setCurrentIndex((p) => (p + 1) % filteredImages.length);
+  }, [filteredImages.length]);
+
+  const prevImage = useCallback(() => {
+    setCurrentIndex((p) => (p - 1 + filteredImages.length) % filteredImages.length);
+  }, [filteredImages.length]);
 
   useEffect(() => {
     if (!isFullscreen) return;
@@ -429,38 +73,14 @@ export function Gallery() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isFullscreen, images.length]);
-
-  const checkMobile = () => setIsMobile(window.innerWidth < 768);
-
-  const fetchGalleryImages = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/gallery`);
-      if (response.ok) {
-        const data = await response.json();
-        setImages(Array.isArray(data) ? data : data.images || []);
-      }
-    } catch (error) {
-      console.error("Error fetching gallery images:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const nextImage = () => setCurrentIndex((p) => (p + 1) % images.length);
-  const prevImage = () => setCurrentIndex((p) => (p - 1 + images.length) % images.length);
+  }, [isFullscreen, nextImage, prevImage]);
 
   if (loading) {
     return (
-      <section className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
-        <div className="text-center">
-          <div className="relative inline-block">
-            <div className="w-24 h-24 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 animate-pulse" />
-            </div>
-          </div>
-          <p className="text-blue-300 mt-6 text-lg font-light">Loading Gallery...</p>
+      <section className="py-20 bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="inline-block w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-slate-500 mt-4">Loading gallery...</p>
         </div>
       </section>
     );
@@ -468,306 +88,159 @@ export function Gallery() {
 
   if (images.length === 0) return null;
 
-  // Mobile grid
-  if (isMobile) {
-    return (
-      <section className="py-16 px-4 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h4 className="text-blue-400 font-bold uppercase tracking-[0.3em] text-sm mb-3">
-              Gallery
-            </h4>
-            <h2 className="text-4xl font-black text-white mb-4">
-              <span className="bg-gradient-to-r from-blue-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-                Our Memories
-              </span>
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {images.slice(0, 12).map((image, idx) => (
-              <motion.div
-                key={image._id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                onClick={() => { setCurrentIndex(idx); setIsFullscreen(true); }}
-                className="relative group cursor-pointer rounded-2xl overflow-hidden shadow-xl bg-gray-800 aspect-square"
-              >
-                <img
-                  src={image.url}
-                  alt={image.title || `Gallery ${idx + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <p className="text-white text-xs font-medium truncate">
-                      {image.title || `Photo ${idx + 1}`}
-                    </p>
-                  </div>
-                </div>
-                <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-md text-white px-2 py-1 rounded-full text-xs">
-                  #{idx + 1}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          {images.length > 12 && (
-            <div className="mt-8 text-center">
-              <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-sm">
-                View All {images.length} Photos
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Fullscreen modal for mobile */}
-        <FullscreenModal
-          images={images}
-          currentIndex={currentIndex}
-          isOpen={isFullscreen}
-          onClose={() => setIsFullscreen(false)}
-          onPrev={prevImage}
-          onNext={nextImage}
-        />
-      </section>
-    );
-  }
-
-  // Desktop 3D stack
-  const imageProgress = scrollProgress * images.length;
-  const totalImages = images.length;
+  const openFullscreen = (index: number) => {
+    setCurrentIndex(index);
+    setIsFullscreen(true);
+  };
 
   return (
-    <section
-      ref={containerRef}
-      className="relative min-h-[200vh] bg-gradient-to-br from-gray-950 via-blue-950 to-gray-950 overflow-hidden"
-    >
-      {/* Background gradient */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent" />
-      </div>
-
-      {/* Sticky title */}
-      <div className="sticky top-0 z-20 h-screen flex items-center justify-center pointer-events-none">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="text-center pointer-events-auto"
-        >
-          <h2 className="text-7xl md:text-8xl font-black text-white mb-4 tracking-tight">
-            <span className="bg-gradient-to-r from-blue-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-              Gallery
-            </span>
+    <section className="py-20 bg-gradient-to-b from-white to-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <p className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Gallery</p>
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight mb-3">
+            MOMENTS FROM NEPALAYA
           </h2>
-          <p className="text-xl text-white/60 max-w-2xl mx-auto font-light">
-            Scroll to explore our memories
+          <p className="text-sm sm:text-lg text-slate-600 max-w-2xl mx-auto">
+            Explore the vibrant campus life, academic activities, and memorable moments
           </p>
+        </div>
+
+        {/* Category Tabs */}
+        {categories.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-10">
+            <button
+              onClick={() => setActiveCategory("All")}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                activeCategory === "All"
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+              }`}
+            >
+              All ({images.length})
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-all inline-flex items-center gap-1.5 ${
+                  activeCategory === cat
+                    ? "bg-primary text-white shadow-md"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                <FolderOpen className="w-3.5 h-3.5" />
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Image Grid */}
+        {filteredImages.length === 0 ? (
+          <div className="text-center py-16 text-slate-400">
+            <ImageIcon className="w-16 h-16 mx-auto mb-3 opacity-50" />
+            <p className="text-lg">No images in this category</p>
+          </div>
+        ) : (
           <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="mt-8 text-white/30"
+            layout
+            className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4"
           >
-            ↓ Scroll down ↓
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* 3D stack */}
-      <div className="sticky top-0 z-10 h-screen flex items-center justify-center">
-        <div className="relative w-full max-w-6xl mx-auto" style={{ perspective: "1400px" }}>
-          <div className="relative w-full h-[600px] flex items-center justify-center">
-            {images.map((image, i) => {
-              const offset = i - imageProgress;
-              const absOffset = Math.abs(offset);
-              const zOffset = offset * 450;
-              const scale = Math.max(0.25, 1 - absOffset * 0.2);
-              const opacity = Math.max(0.08, 1 - absOffset * 0.3);
-              const yOffset = offset * 40;
-              const zIndex = Math.round(1000 - absOffset);
-
-              const isActive = absOffset < 0.5;
-
-              return (
+            <AnimatePresence mode="popLayout">
+              {filteredImages.map((image, idx) => (
                 <motion.div
                   key={image._id}
-                  className="absolute top-1/2 left-1/2 cursor-pointer"
-                  style={{
-                    transform: `translate(-50%, calc(-50% + ${yOffset}px)) translateZ(${zOffset}px) scale(${scale})`,
-                    opacity,
-                    zIndex,
-                  }}
-                  onClick={() => { setCurrentIndex(i); setIsFullscreen(true); }}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                  onClick={() => openFullscreen(idx)}
+                  className="group relative cursor-pointer break-inside-avoid overflow-hidden rounded-xl bg-slate-100 shadow-sm hover:shadow-xl transition-shadow duration-300"
                 >
-                  <div
-                    className="relative rounded-2xl overflow-hidden shadow-2xl transition-shadow duration-300"
-                    style={{
-                      width: "380px",
-                      height: "280px",
-                      boxShadow: isActive
-                        ? "0 25px 50px -12px rgba(59, 130, 246, 0.6)"
-                        : "0 10px 30px -12px rgba(0, 0, 0, 0.5)",
-                    }}
-                  >
-                    <img
-                      src={image.url}
-                      alt={image.title || `Gallery ${i + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    {isActive && (
-                      <>
-                        <div className="absolute inset-0 bg-gradient-to-t from-blue-500/20 via-transparent to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 to-transparent">
-                          <p className="text-white font-bold text-lg">
-                            {image.title || `Photo ${i + 1}`}
-                          </p>
-                        </div>
-                        <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium border border-white/10">
-                          #{String(i + 1).padStart(2, "0")}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  <img
+                    src={image.url}
+                    alt={image.title || "Gallery"}
+                    className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
+                  {image.title && (
+                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="text-white text-sm font-medium truncate">{image.title}</p>
+                    </div>
+                  )}
                 </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Progress dots */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-2">
-            {images.map((_, i) => (
-              <button
-                key={i}
-                className={`rounded-full transition-all duration-300 ${
-                  Math.abs(i - imageProgress) < 0.5
-                    ? "w-6 h-2 bg-blue-500"
-                    : "w-2 h-2 bg-white/30 hover:bg-white/50"
-                }`}
-                onClick={() => {
-                  containerRef.current?.scrollIntoView({ behavior: "smooth" });
-                }}
-              />
-            ))}
-          </div>
-        </div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
       </div>
 
-      {/* Fullscreen modal */}
-      <FullscreenModal
-        images={images}
-        currentIndex={currentIndex}
-        isOpen={isFullscreen}
-        onClose={() => setIsFullscreen(false)}
-        onPrev={prevImage}
-        onNext={nextImage}
-      />
-    </section>
-  );
-}
-
-/* ─── Fullscreen Modal ─── */
-function FullscreenModal({
-  images,
-  currentIndex,
-  isOpen,
-  onClose,
-  onPrev,
-  onNext,
-}: {
-  images: GalleryImage[];
-  currentIndex: number;
-  isOpen: boolean;
-  onClose: () => void;
-  onPrev: () => void;
-  onNext: () => void;
-}) {
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    const dy = e.changedTouches[0].clientY - touchStartY.current;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-      dx > 0 ? onPrev() : onNext();
-    }
-  };
-
-  const img = images[currentIndex];
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/30 text-white p-4 rounded-full transition-all backdrop-blur-xl border border-white/20"
-            aria-label="Close"
+      {/* Fullscreen Modal */}
+      <AnimatePresence>
+        {isFullscreen && filteredImages[currentIndex] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
           >
-            <X className="w-6 h-6" />
-          </button>
+            {/* Close */}
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all border border-white/20"
+            >
+              <X className="w-6 h-6" />
+            </button>
 
-          <div className="relative w-full h-full flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentIndex}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="relative max-w-5xl max-h-[80vh] flex items-center justify-center"
-              >
-                <img
-                  src={img.url}
-                  alt={img.title || `Photo ${currentIndex + 1}`}
-                  className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl select-none"
+            {/* Image */}
+            <div className="relative w-full h-full flex items-center justify-center p-4">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={currentIndex}
+                  src={filteredImages[currentIndex].url}
+                  alt={filteredImages[currentIndex].title || "Gallery"}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="max-w-full max-h-full object-contain select-none"
                   draggable={false}
+                  onClick={(e) => e.stopPropagation()}
                 />
-              </motion.div>
-            </AnimatePresence>
+              </AnimatePresence>
 
-            <button
-              onClick={onPrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white p-4 rounded-full transition-all backdrop-blur-xl border border-white/20"
-              aria-label="Previous image"
-            >
-              <ChevronLeft className="w-8 h-8" />
-            </button>
-            <button
-              onClick={onNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white p-4 rounded-full transition-all backdrop-blur-xl border border-white/20"
-              aria-label="Next image"
-            >
-              <ChevronRight className="w-8 h-8" />
-            </button>
-
-            <div className="absolute bottom-8 left-8 text-white pointer-events-none">
-              <div className="bg-black/50 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10">
-                <span className="text-sm font-medium">
-                  {currentIndex + 1} / {images.length}
-                </span>
-              </div>
-              {img.title && (
-                <p className="text-2xl font-bold mt-3 drop-shadow-lg">
-                  {img.title}
-                </p>
+              {/* Prev */}
+              {filteredImages.length > 1 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all border border-white/20"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
               )}
+
+              {/* Next */}
+              {filteredImages.length > 1 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all border border-white/20"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+
+              {/* Counter */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm border border-white/20 pointer-events-none">
+                {currentIndex + 1} / {filteredImages.length}
+              </div>
             </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
   );
 }

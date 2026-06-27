@@ -40,26 +40,27 @@ export default function FacultyCard({
     >
       <div className="px-6 pt-10 pb-6 flex flex-col items-center text-center h-full">
         <div className="relative mb-6">
-          <div className="w-36 h-36 overflow-hidden rounded-xl bg-slate-50 flex items-center justify-center">
+          <div className="w-28 h-28 sm:w-44 sm:h-44 overflow-hidden rounded-xl bg-slate-50 flex items-center justify-center relative">
             {f.photo ? (
               <img
                 src={getPhotoUrl(f.photo)}
                 alt={f.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
               />
             ) : (
               <span className="text-3xl font-bold text-slate-400">
                 {getInitials(f.name)}
               </span>
             )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl" />
           </div>
         </div>
 
-        <h3 className="text-lg font-bold text-slate-800 mb-1">
+        <h3 className="text-xl font-bold text-slate-900 mb-1">
           {f.name}
         </h3>
 
-        <p className="text-sm font-semibold text-slate-500 mb-3">
+        <p className="text-base font-semibold text-slate-600 mb-3">
           {f.role}
         </p>
 
@@ -69,7 +70,7 @@ export default function FacultyCard({
 
         {f.description && (
           <div className="mt-4 pt-4 border-t border-slate-100 w-full flex-1">
-            <p className="text-sm text-slate-400 leading-relaxed line-clamp-2">
+            <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-2">
               {f.description}
             </p>
           </div>

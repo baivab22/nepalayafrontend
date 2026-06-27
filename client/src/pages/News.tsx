@@ -10,6 +10,11 @@ import { FaFacebook, FaTwitter, FaWhatsapp, FaLinkedinIn } from "react-icons/fa"
 
 const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
+function stripHtml(html: string) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  return doc.body.textContent || "";
+}
+
 interface NewsItem {
   _id?: string;
   title: string;
@@ -194,28 +199,28 @@ export default function News() {
   return (
 <PageTransition>
   <section className="bg-white border-b border-slate-200">
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
         News & Events
       </h1>
 
-      <p className="mt-3 text-lg text-slate-600 max-w-2xl">
+      <p className="mt-3 text-base sm:text-lg text-slate-600 max-w-2xl">
         Stay informed with the latest announcements, achievements, events,
         and stories from our institution.
       </p>
     </div>
   </section>
 
-  <section className="py-12 md:py-16 bg-slate-50">
-    <div className="max-w-7xl mx-auto px-6">
+  <section className="py-10 sm:py-12 md:py-16 bg-slate-50">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
       {loading ? (
-        <div className="space-y-8">
-          <Skeleton className="h-[420px] rounded-3xl" />
+        <div className="space-y-6 sm:space-y-8">
+          <Skeleton className="h-[250px] sm:h-[420px] rounded-2xl sm:rounded-3xl" />
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-[350px] rounded-3xl" />
+              <Skeleton key={i} className="h-[280px] sm:h-[350px] rounded-2xl sm:rounded-3xl" />
             ))}
           </div>
         </div>
@@ -236,11 +241,11 @@ export default function News() {
           {/* Featured News */}
           {newsItems[0] && (
             <Link href={`/news/${newsItems[0]._id}`}>
-              <div className="group bg-white rounded-3xl overflow-hidden border border-slate-200 mb-14 hover:shadow-xl transition-all duration-300 cursor-pointer">
+              <div className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 mb-10 sm:mb-14 hover:shadow-xl transition-all duration-300 cursor-pointer">
 
                 <div className="grid lg:grid-cols-2">
 
-                  <div className="h-[320px] lg:h-[500px]">
+                  <div className="h-[200px] sm:h-[320px] lg:h-[500px]">
                     <img
                       src={getImageUrl(newsItems[0].image)}
                       alt={newsItems[0].title}
@@ -248,23 +253,23 @@ export default function News() {
                     />
                   </div>
 
-                  <div className="p-8 lg:p-12 flex flex-col justify-center">
+                  <div className="p-5 sm:p-8 lg:p-12 flex flex-col justify-center">
 
-                    <span className="inline-flex w-fit px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-5">
+                    <span className="inline-flex w-fit px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-4 sm:mb-5">
                       {newsItems[0].category}
                     </span>
 
-                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-3 sm:mb-4">
                       <Calendar className="w-4 h-4" />
                       {formatDisplayDate(newsItems[0].date)}
                     </div>
 
-                    <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 leading-tight mb-5">
+                    <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold text-slate-900 leading-tight mb-4 sm:mb-5">
                       {newsItems[0].title}
                     </h2>
 
-                    <p className="text-slate-600 text-lg leading-relaxed line-clamp-4 mb-8">
-                      {newsItems[0].description}
+                    <p className="text-slate-700 text-sm sm:text-lg leading-relaxed line-clamp-3 sm:line-clamp-4 mb-6 sm:mb-8 font-medium">
+                      {stripHtml(newsItems[0].description)}
                     </p>
 
                     <div className="inline-flex items-center gap-2 font-medium text-primary">
@@ -281,22 +286,22 @@ export default function News() {
           )}
 
           {/* Section Title */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
               Latest Stories
             </h2>
           </div>
 
           {/* News Grid */}
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {newsItems.slice(1).map((news, idx) => (
               <Link
                 key={news._id || idx}
                 href={`/news/${news._id}`}
               >
-                <article className="group bg-white rounded-3xl overflow-hidden border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300 h-full cursor-pointer">
+                <article className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300 h-full cursor-pointer">
 
-                  <div className="h-60 bg-slate-100">
+                  <div className="h-48 sm:h-60 bg-slate-100">
                     {news.image ? (
                       <img
                         src={getImageUrl(news.image)}
@@ -310,9 +315,9 @@ export default function News() {
                     )}
                   </div>
 
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
 
-                    <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 mb-4">
+                    <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 mb-4">
                       {news.category}
                     </span>
 
@@ -321,15 +326,15 @@ export default function News() {
                       {formatDisplayDate(news.date)}
                     </div>
 
-                    <h3 className="text-xl font-semibold text-slate-900 leading-snug mb-3 line-clamp-2">
+                    <h3 className="text-xl font-bold text-slate-900 leading-snug mb-3 line-clamp-2">
                       {news.title}
                     </h3>
 
-                    <p className="text-slate-600 leading-relaxed line-clamp-3 mb-5">
-                      {news.description}
+                    <p className="text-slate-700 leading-relaxed line-clamp-3 mb-5 text-base">
+                      {stripHtml(news.description)}
                     </p>
 
-                    <span className="inline-flex items-center gap-2 text-primary font-medium">
+                    <span className="inline-flex items-center gap-2 text-primary font-semibold">
                       Read More
                       <ArrowRight className="w-4 h-4" />
                     </span>

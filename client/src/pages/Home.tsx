@@ -197,7 +197,7 @@ const FacultySlider = () => {
             {facultyList.map((f, idx) => (
               <div
                 key={`fac-${idx}`}
-                className="shrink-0 w-[300px] cursor-pointer"
+                className="                shrink-0 w-[260px] sm:w-[300px] cursor-pointer"
                 onClick={() => setSelectedFaculty(f)}
               >
                 <FacultyCard faculty={f} getPhotoUrl={getPhotoUrl} tilt />
@@ -210,6 +210,55 @@ const FacultySlider = () => {
   );
 };
 
+
+
+function TypedText({ title, subtitle, slideKey }: { title: string; subtitle: string; slideKey: string | number }) {
+  const [titleChars, setTitleChars] = useState("");
+  const [subtitleChars, setSubtitleChars] = useState("");
+  const [phase, setPhase] = useState<"title" | "subtitle" | "done">("title");
+
+  useEffect(() => {
+    setTitleChars("");
+    setSubtitleChars("");
+    setPhase("title");
+  }, [slideKey]);
+
+  useEffect(() => {
+    if (phase === "title" && titleChars.length < title.length) {
+      const t = setTimeout(() => setTitleChars(title.slice(0, titleChars.length + 1)), 45);
+      return () => clearTimeout(t);
+    }
+    if (phase === "title" && titleChars.length >= title.length) {
+      const t = setTimeout(() => setPhase("subtitle"), 500);
+      return () => clearTimeout(t);
+    }
+    return;
+  }, [phase, titleChars, title]);
+
+  useEffect(() => {
+    if (phase === "subtitle" && subtitleChars.length < subtitle.length) {
+      const t = setTimeout(() => setSubtitleChars(subtitle.slice(0, subtitleChars.length + 1)), 35);
+      return () => clearTimeout(t);
+    }
+    if (phase === "subtitle") setPhase("done");
+    return;
+  }, [phase, subtitleChars, subtitle]);
+
+  return (
+    <div>
+      <div className="text-4xl md:text-6xl lg:text-7xl font-display font-black text-white leading-tight uppercase">
+        {titleChars}
+        {phase === "title" && <span className="inline-block w-[3px] h-[0.8em] bg-primary ml-1 align-middle animate-pulse" />}
+      </div>
+      {phase !== "title" && (
+        <div className="text-base md:text-lg text-slate-300 mt-3 font-medium max-w-xl">
+          {subtitleChars}
+          {phase !== "done" && <span className="inline-block w-[2px] h-[1em] bg-primary/60 ml-0.5 align-middle animate-pulse" />}
+        </div>
+      )}
+    </div>
+  );
+}
 
 
 export default function Home() {
@@ -294,7 +343,7 @@ export default function Home() {
       {/* HERO CAROUSEL */}
       <section className="relative h-screen overflow-hidden bg-slate-900">
         {slidesLoaded && slides.length === 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0">
             <div className="absolute inset-0 overflow-hidden">
               <motion.div style={{ y: smoothHeroY }} className="absolute inset-0 will-change-transform">
                 <img
@@ -305,42 +354,35 @@ export default function Home() {
               </motion.div>
               <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/70 to-transparent" />
             </div>
-            <motion.div style={{ y: heroContentY }} className="relative z-20 text-center px-4">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-400 text-sm font-semibold mb-6">
-                <span className="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse" />
-                Est. 1984 AD
+            <div className="absolute inset-0 pt-28 sm:pt-32 md:pt-44 px-4 sm:px-8 md:px-16 lg:px-24">
+              <div className="max-w-2xl">
+                <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-black text-white leading-tight uppercase">
+                  Shaping the Future of Education
+                </h1>
+                <p className="text-base md:text-lg text-slate-300 mt-3 font-medium">
+                  Nepalaya Educational Foundation
+                </p>
+                <div className="mt-10">
+                  <Link href="/admissions">
+                    <Button className="h-12 px-8 text-base bg-primary hover:bg-primary/90 text-white rounded-full shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 border-0">
+                      Apply Now <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <h1 className="text-5xl md:text-7xl font-display font-black text-white leading-tight mb-6">
-                Nepalaya Educational Foundation
-              </h1>
-              <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-                Discover world-class education right here in the Kathmandu Valley.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/admissions">
-                  <Button size="lg" className="h-14 px-8 text-lg bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg shadow-slate-900/25">
-                    Apply Now <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-                <Link href="/programs">
-                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg bg-white/5 hover:bg-white/10 text-white border-white/20 backdrop-blur-md rounded-full">
-                    Explore Programs
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+            </div>
           </div>
         ) : (
           <>
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               {slides.map((slide, idx) =>
                 idx === currentSlide && (
                   <motion.div
                     key={slide._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                    initial={{ x: "100%" }}
+                    animate={{ x: "0%" }}
+                    exit={{ x: "-100%" }}
+                    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                     className="absolute inset-0"
                   >
                     <motion.div style={{ y: smoothHeroY }} className="absolute inset-0 overflow-hidden will-change-transform">
@@ -371,26 +413,38 @@ export default function Home() {
               )}
             </AnimatePresence>
 
-            {/* <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.5, delay: 0.6 }}
-              className="absolute bottom-32 md:bottom-40 left-0 right-0 z-10 text-center px-4"
-            >
-              <div className="max-w-7xl mx-auto">
-                <motion.div
-                  key={`est-${currentSlide}`}
-                  initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  transition={{ duration: 1, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="inline-flex items-center px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-400 text-sm font-semibold"
-                >
-                  <span className="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse" />
-                  Est. 1984 AD
-                </motion.div>
-              </div>
-            </motion.div> */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 z-10"
+              >
+                <div className="absolute inset-0 pt-28 sm:pt-32 md:pt-44 px-4 sm:px-8 md:px-16 lg:px-24">
+                  <div className="max-w-2xl">
+                    <TypedText
+                      title={slides[currentSlide]?.title || "Shaping the Future of Education"}
+                      subtitle={slides[currentSlide]?.subtitle || "Nepalaya Educational Foundation"}
+                      slideKey={currentSlide}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="mt-10"
+                    >
+                      <Link href={slides[currentSlide]?.ctaLink || "/admissions"}>
+                        <Button className="h-12 px-8 text-base bg-primary hover:bg-primary/90 text-white rounded-full shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 border-0">
+                          {slides[currentSlide]?.ctaText || "Apply Now"} <ArrowRight className="ml-2 w-4 h-4" />
+                        </Button>
+                      </Link>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
 
             <button
               onClick={prevSlide}
@@ -447,12 +501,12 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: idx * 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center text-center hover:-translate-y-1 transition-transform"
+              className="bg-white rounded-2xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center text-center hover:-translate-y-1 transition-transform"
             >
-              <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3 sm:mb-4">
                 {stat.icon}
               </div>
-              <div className="text-3xl font-display font-black text-slate-900 mb-1">
+              <div className="text-2xl sm:text-3xl font-display font-black text-slate-900 mb-1">
                 <AnimatedCounter value={stat.value} suffix={stat.suffix} duration={2} />
               </div>
               <div className="text-sm font-medium text-slate-500 uppercase tracking-wider">{stat.label}</div>
@@ -493,7 +547,7 @@ export default function Home() {
                 transition={{ delay: 0.5, duration: 0.5 }}
                 className="absolute -bottom-8 -right-8 bg-white p-6 rounded-2xl shadow-xl z-20 border border-slate-100 hidden md:block"
               >
-                <div className="text-4xl font-black text-primary mb-1">50+</div>
+                <div className="text-4xl font-black text-primary mb-1">42+</div>
                 <div className="text-sm font-semibold text-slate-600 uppercase">Years of<br/>Excellence</div>
               </motion.div>
             </div>
@@ -514,7 +568,8 @@ export default function Home() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6 leading-tight"
               >
-                A Legacy of Learning in the <span className="text-gradient">Heart of Nepal</span>
+         
+                Building Futures Since 1984
               </motion.h2>
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -523,15 +578,15 @@ export default function Home() {
                 transition={{ delay: 0.2 }}
                 className="text-lg text-slate-600 mb-8 leading-relaxed"
               >
-                Founded in 1984 AD, Nepalaya Educational Foundation stands as a beacon of academic excellence. We are committed to nurturing intellectual curiosity and producing graduates who lead with integrity.
+                Founded in <strong>1984 A.D.</strong>, Nepalaya Educational Foundation has been a pioneer in delivering quality education in Nepal. Established with the vision of providing globally accepted education within the local community, Nepalaya has grown into one of the country's prominent educational institutions. Through continuous dedication to academic excellence, we are shaping future leaders and creating global opportunities for learners at every stage of their educational journey.
               </motion.p>
               
               <ul className="space-y-4 mb-10">
                 {[
-                  "Affiliated with Tribhuvan University",
-                  "State-of-the-art research laboratories",
-                  "Global exchange programs",
-                  "Comprehensive scholarship schemes"
+                  "Established in 1984 A.D.",
+                  "Affiliated with Rajarshi Janak University (RJU)",
+                  "Four academic buildings with nearly 80 well-organized classrooms",
+                  "Committed to equality, diversity, and academic excellence"
                 ].map((item, i) => (
                   <motion.li 
                     key={i} 
@@ -564,9 +619,17 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Second Row: Swapped Order, Text Left, Image Right, No Header */}
+          {/* Second Row: Academic Programs & Learning Opportunities */}
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
+              <motion.h4 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-primary font-bold uppercase tracking-widest text-sm mb-3"
+              >
+                Academic Programs & Learning Opportunities
+              </motion.h4>
               <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -574,7 +637,7 @@ export default function Home() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6 leading-tight"
               >
-                A Legacy of Learning in the <span className="text-gradient">Heart of Nepal</span>
+                Education for Every Stage of Growth
               </motion.h2>
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -583,15 +646,15 @@ export default function Home() {
                 transition={{ delay: 0.2 }}
                 className="text-lg text-slate-600 mb-8 leading-relaxed"
               >
-                Founded in 1984 AD, Nepalaya Educational Foundation stands as a beacon of academic excellence. We are committed to nurturing intellectual curiosity and producing graduates who lead with integrity.
+                Nepalaya Educational Foundation offers comprehensive educational pathways from <strong>School Level and +2 Programs</strong> to <strong>Bachelor's and Master's Degrees</strong>. Our diverse range of specialized and elective courses is designed to meet the evolving needs of students and prepare them for success in a global environment.
               </motion.p>
               
-              <ul className="space-y-4 mb-10">
+              <ul className="space-y-4 mb-6">
                 {[
-                  "Affiliated with Tribhuvan University",
-                  "State-of-the-art research laboratories",
-                  "Global exchange programs",
-                  "Comprehensive scholarship schemes"
+                  "School and +2 Level Programs",
+                  "Undergraduate Programs: B.Sc. CSIT, BCA, BA, and BALLB* (Proposed)",
+                  "Graduate Programs: MBA* (Proposed Expansion Program)",
+                  "Student-centered learning with specialized and elective courses"
                 ].map((item, i) => (
                   <motion.li 
                     key={i} 
@@ -608,16 +671,26 @@ export default function Home() {
                   </motion.li>
                 ))}
               </ul>
+
+              {/* <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.7 }}
+                className="text-sm text-slate-400 italic mb-8"
+              >
+                Programs marked with an asterisk (*) are proposed programs.
+              </motion.p> */}
               
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.7 }}
+                transition={{ delay: 0.8 }}
               >
-                <Link href="/about">
+                <Link href="/programs">
                   <Button size="lg" className="rounded-full px-8 bg-slate-900 hover:bg-slate-800 text-white">
-                    Discover Our History
+                    Explore All Programs
                   </Button>
                 </Link>
               </motion.div>
@@ -632,7 +705,7 @@ export default function Home() {
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                   style={{ y: smoothAboutImgY2 }}
-                  src={`${import.meta.env.BASE_URL}images/about-college.png`} 
+                  src={`${import.meta.env.BASE_URL}images/about-college2.png`} 
                   alt="Students in library" 
                   className="w-full rounded-3xl shadow-2xl relative z-10 border border-slate-100 will-change-transform"
                 />
@@ -644,7 +717,7 @@ export default function Home() {
                 transition={{ delay: 0.5, duration: 0.5 }}
                 className="absolute -bottom-8 -left-8 bg-white p-6 rounded-2xl shadow-xl z-20 border border-slate-100 hidden md:block"
               >
-                <div className="text-4xl font-black text-primary mb-1">50+</div>
+                <div className="text-4xl font-black text-primary mb-1">42+</div>
                 <div className="text-sm font-semibold text-slate-600 uppercase">Years of<br/>Excellence</div>
               </motion.div>
             </div>

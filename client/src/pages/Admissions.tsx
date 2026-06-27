@@ -212,8 +212,8 @@ export default function Admissions() {
             
             {/* Progress Steps - Simplified */}
             {step < 4 && (
-              <div className="border-b border-slate-200 bg-white px-8 py-6">
-                <div className="flex items-center justify-center gap-4">
+              <div className="border-b border-slate-200 bg-white px-4 sm:px-8 py-6">
+                <div className="flex items-center justify-center gap-2 sm:gap-4">
                   {[1, 2, 3].map((num) => (
                     <div key={num} className="flex items-center">
                       <div
@@ -235,7 +235,7 @@ export default function Admissions() {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-center gap-24 mt-3">
+                <div className="flex justify-center gap-8 sm:gap-24 mt-3">
                   <span className={`text-xs font-semibold ${step === 1 ? "text-primary" : "text-slate-400"}`}>
                     Personal
                   </span>
@@ -249,7 +249,7 @@ export default function Admissions() {
               </div>
             )}
 
-            <div className="p-8 md:p-10 text-slate-900">
+            <div className="p-4 sm:p-8 md:p-10 text-slate-900">
               {step === 4 && submittedData ? (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }} 
