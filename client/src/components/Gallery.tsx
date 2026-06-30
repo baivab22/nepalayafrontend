@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, X, FolderOpen, ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, FolderOpen, ImageIcon, ArrowRight } from "lucide-react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 interface GalleryImage {
   _id: string;
@@ -12,7 +14,12 @@ interface GalleryImage {
 
 const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
-export function Gallery() {
+interface GalleryProps {
+  limit?: number;
+  showViewAll?: boolean;
+}
+
+export function Gallery({ limit, showViewAll }: GalleryProps = {}) {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
@@ -44,7 +51,7 @@ export function Gallery() {
       const res = await fetch(`${API_URL}/api/gallery/categories`);
       if (res.ok) {
         const data = await res.json();
-        setCategories(Array.isArray(data) ? data : []);
+        setCategories(Array.isArray(data) ? data.filter((c: string) => c !== "Uncategorized") : []);
       }
     } catch (err) {
       console.error("Error fetching categories:", err);
@@ -56,6 +63,8 @@ export function Gallery() {
       ? images
       : images.filter((img) => img.category === activeCategory);
 
+  const displayImages = limit ? filteredImages.slice(0, limit) : filteredImages;
+
   const nextImage = useCallback(() => {
     setCurrentIndex((p) => (p + 1) % filteredImages.length);
   }, [filteredImages.length]);
@@ -63,6 +72,12 @@ export function Gallery() {
   const prevImage = useCallback(() => {
     setCurrentIndex((p) => (p - 1 + filteredImages.length) % filteredImages.length);
   }, [filteredImages.length]);
+
+  const openFullscreen = (index: number) => {
+    const fullIndex = images.indexOf(displayImages[index]);
+    setCurrentIndex(fullIndex >= 0 ? fullIndex : index);
+    setIsFullscreen(true);
+  };
 
   useEffect(() => {
     if (!isFullscreen) return;
@@ -87,11 +102,6 @@ export function Gallery() {
   }
 
   if (images.length === 0) return null;
-
-  const openFullscreen = (index: number) => {
-    setCurrentIndex(index);
-    setIsFullscreen(true);
-  };
 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-slate-50">
@@ -138,7 +148,7 @@ export function Gallery() {
         )}
 
         {/* Image Grid */}
-        {filteredImages.length === 0 ? (
+        {displayImages.length === 0 ? (
           <div className="text-center py-16 text-slate-400">
             <ImageIcon className="w-16 h-16 mx-auto mb-3 opacity-50" />
             <p className="text-lg">No images in this category</p>
@@ -149,7 +159,7 @@ export function Gallery() {
             className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4"
           >
             <AnimatePresence mode="popLayout">
-              {filteredImages.map((image, idx) => (
+              {displayImages.map((image, idx) => (
                 <motion.div
                   key={image._id}
                   layout
@@ -176,6 +186,16 @@ export function Gallery() {
               ))}
             </AnimatePresence>
           </motion.div>
+        )}
+
+        {showViewAll && images.length > (limit || 0) && (
+          <div className="text-center mt-10">
+            <Link href="/gallery">
+              <Button size="lg" variant="outline" className="rounded-full px-8 border-2 border-slate-200 hover:border-primary hover:text-primary">
+                View All Images <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
 

@@ -1,7 +1,36 @@
 import { Router, type IRouter } from "express";
 import { ProgramModel, programSchemaZ } from "../db/schema";
+import multer, { type StorageEngine } from "multer";
+import path from "path";
+import fs from "fs";
 
 const router: IRouter = Router();
+
+// --- Program Image Upload Setup ---
+const programUploadDir = path.resolve(process.cwd(), "uploads/program-images");
+if (!fs.existsSync(programUploadDir)) fs.mkdirSync(programUploadDir, { recursive: true });
+
+const programStorage: StorageEngine = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, programUploadDir),
+  filename: (_req, file, cb) => cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")),
+});
+
+const programUpload = multer({ storage: programStorage });
+
+// POST /api/programs/upload-image
+router.post("/programs/upload-image", programUpload.single("image"), (req, res) => {
+  const file = req.file as Express.Multer.File | undefined;
+  if (!file) return res.status(400).json({ error: "No file uploaded" });
+  const url = `/api/programs/image/${file.filename}`;
+  res.json({ filename: file.filename, url });
+});
+
+// GET /api/programs/image/:filename
+router.get("/programs/image/:filename", (req, res) => {
+  const filePath = path.join(programUploadDir, req.params.filename);
+  if (!fs.existsSync(filePath)) return res.status(404).end();
+  res.sendFile(filePath);
+});
 
 // CREATE
 router.post("/programs", async (req, res) => {
@@ -20,7 +49,7 @@ router.post("/programs", async (req, res) => {
 // READ ALL
 router.get("/programs", async (_req, res) => {
   try {
-    const programs = await ProgramModel.find().sort({ order: 1, createdAt: -1 });
+    const programs = await ProgramModel.find().sort({ order: -1, createdAt: -1 });
     // Frontend (public + admin) expects { programs: [...] }
     res.json({ programs });
   } catch (err) {

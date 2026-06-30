@@ -8,6 +8,7 @@ import { Link } from "wouter";
 import FacultyCard from "@/components/FacultyCard";
 import ProgramSlider from "@/components/ProgramSlider";
 import NewsSlider from "@/components/NewsSlider";
+import NoticeSlider from "@/components/NoticeSlider";
 import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { 
   ArrowRight, BookOpen, Users, Trophy, ChevronRight,
@@ -287,6 +288,7 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slidesLoaded, setSlidesLoaded] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const initialRender = useRef(true);
 
   const getSlideMediaUrl = (media: string) => {
     if (!media) return "";
@@ -301,7 +303,7 @@ export default function Home() {
         const res = await fetch(`${API_URL}/api/slider/active`);
         const data = await res.json();
         const list = data?.slides || [];
-        setSlides(list);
+        setSlides(list.reverse());
       } catch {
         setSlides([]);
       } finally {
@@ -379,9 +381,10 @@ export default function Home() {
                 idx === currentSlide && (
                   <motion.div
                     key={slide._id}
-                    initial={{ x: "100%" }}
+                    initial={initialRender.current ? false : { x: "100%" }}
                     animate={{ x: "0%" }}
                     exit={{ x: "-100%" }}
+                    onAnimationStart={() => { initialRender.current = false; }}
                     transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                     className="absolute inset-0"
                   >
@@ -406,8 +409,7 @@ export default function Home() {
                         />
                       )}
                     </motion.div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-slate-900/10" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-transparent to-slate-900/60" />
+
                   </motion.div>
                 )
               )}
@@ -524,7 +526,7 @@ export default function Home() {
         className="py-16 bg-white"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 lg:space-y-20">
-          {/* First Row: Image Left, Text Right */}
+          {/* First Row: Principal's Speech */}
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div ref={aboutRef1} className="relative">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-3xl -m-6 -z-10 transform -rotate-3" />
@@ -535,8 +537,8 @@ export default function Home() {
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                   style={{ y: smoothAboutImgY1 }}
-                  src={`${import.meta.env.BASE_URL}images/about-college.png`} 
-                  alt="Students in library" 
+                  src={`${import.meta.env.BASE_URL}images/principle.jpg`}
+                  alt="Jit Bahadur Lamichhane"
                   className="w-full rounded-3xl shadow-2xl relative z-10 border border-slate-100 will-change-transform"
                 />
               </div>
@@ -547,8 +549,8 @@ export default function Home() {
                 transition={{ delay: 0.5, duration: 0.5 }}
                 className="absolute -bottom-8 -right-8 bg-white p-6 rounded-2xl shadow-xl z-20 border border-slate-100 hidden md:block"
               >
-                <div className="text-4xl font-black text-primary mb-1">42+</div>
-                <div className="text-sm font-semibold text-slate-600 uppercase">Years of<br/>Excellence</div>
+                <div className="text-lg font-display font-bold text-slate-900">Jit Bahadur Lamichhane</div>
+                <div className="text-sm font-semibold text-slate-500">Principal</div>
               </motion.div>
             </div>
 
@@ -559,7 +561,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="text-primary font-bold uppercase tracking-widest text-sm mb-3"
               >
-                About Nepalaya Educational Foundation
+                Principal's Desk
               </motion.h4>
               <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
@@ -568,54 +570,30 @@ export default function Home() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6 leading-tight"
               >
-         
-                Building Futures Since 1984
+                From the Desk of the Principal
               </motion.h2>
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="text-lg text-slate-600 mb-8 leading-relaxed"
+                className="text-lg text-slate-600 mb-6 leading-relaxed text-justify"
               >
-                Founded in <strong>1984 A.D.</strong>, Nepalaya Educational Foundation has been a pioneer in delivering quality education in Nepal. Established with the vision of providing globally accepted education within the local community, Nepalaya has grown into one of the country's prominent educational institutions. Through continuous dedication to academic excellence, we are shaping future leaders and creating global opportunities for learners at every stage of their educational journey.
+                Welcome at <strong className="text-primary font-semibold">Nepalaya</strong>: Your Local{" "}
+                <strong className="text-primary font-semibold italic">"GLOBAL SCHOOL"</strong>
               </motion.p>
-              
-              <ul className="space-y-4 mb-10">
-                {[
-                  "Established in 1984 A.D.",
-                  "Affiliated with Rajarshi Janak University (RJU)",
-                  "Four academic buildings with nearly 80 well-organized classrooms",
-                  "Committed to equality, diversity, and academic excellence"
-                ].map((item, i) => (
-                  <motion.li 
-                    key={i} 
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                    className="flex items-center text-slate-700 font-medium"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mr-3 shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                    </div>
-                    {item}
-                  </motion.li>
-                ))}
-              </ul>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.7 }}
-              >
-                <Link href="/about">
-                  <Button size="lg" className="rounded-full px-8 bg-slate-900 hover:bg-slate-800 text-white">
-                    Discover Our History
-                  </Button>
-                </Link>
-              </motion.div>
+
+              <div className="space-y-4 mb-6">
+                <p className="text-lg text-slate-600 leading-relaxed text-justify">
+                  I am personally committed to establish unique learning culture at Nepalaya. By choosing Nepalaya, you have already discovered an academic success and secured your career path for the dream profession that you have always thought of in your life.
+                </p>
+                <p className="text-lg text-slate-600 leading-relaxed text-justify">
+                  We have a tradition of welcoming those with varied backgrounds and skills and treating them fairly and equally. We believe every student can achieve academic success and we have an extensive pastoral care network to help them to achieve their potential. We place great importance on students being engaged in their learning and developing a pathway through their college career that sets them up for success in their future. We are undertaking several initiatives to create supportive and nurturing learning environment. You will grow in an institutional culture and prepare yourself as a successful person in future.
+                </p>
+                <p className="text-lg text-slate-600 leading-relaxed text-justify">
+                  I am truly excited to accompany each one of you on this journey of transformation—helping ordinary individuals like yourselves become successful, extraordinary individuals. I believe in your potential and look forward to seeing you all achieve great things. Wishing you all a bright and prosperous future ahead. Thank You!
+                </p>
+              </div>
             </div>
           </div>
 
@@ -728,12 +706,14 @@ export default function Home() {
       <ProgramSlider />
 
       {/* GALLERY SECTION */}
-      <Gallery />
+      <Gallery limit={8} showViewAll />
 
       {/* FACULTY SECTION */}
       <FacultySlider />
 
       <NewsSlider />
+
+      <NoticeSlider />
 
       {/* LOCATION MAP SECTION */}
       <LocationMap />

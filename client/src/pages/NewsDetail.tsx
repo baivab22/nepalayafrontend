@@ -99,7 +99,7 @@ export default function NewsDetail() {
   if (loading) {
     return (
       <PageTransition>
-        <div className="min-h-screen bg-white pt-20 pb-16">
+        <div className="min-h-screen bg-white pb-16">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
             <Skeleton className="h-10 w-28 rounded-lg" />
             <Skeleton className="h-12 w-full rounded-xl" />
@@ -127,7 +127,7 @@ export default function NewsDetail() {
   if (!news) {
     return (
       <PageTransition>
-        <div className="min-h-screen bg-white flex items-center justify-center pt-20 pb-16 px-4">
+        <div className="min-h-screen bg-white flex items-center justify-center pb-16 px-4">
           <div className="text-center space-y-6 max-w-md">
             <div className="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center mx-auto">
               <Calendar className="w-10 h-10 text-slate-300" />
@@ -149,7 +149,7 @@ export default function NewsDetail() {
 
   return (
     <PageTransition>
-      <article className="min-h-screen bg-white pt-24 pb-24">
+      <article className="min-h-screen bg-white pb-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           {/* Back Button */}
           <Link href="/news">

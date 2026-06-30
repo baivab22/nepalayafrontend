@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { GraduationCap, MapPin, Phone, Mail, ChevronRight, ChevronDown, ArrowUp, Facebook, Instagram, Youtube, Home, Info, BookOpen, Newspaper, Users, Menu, X, Search, Megaphone } from "lucide-react";
+import { GraduationCap, MapPin, Phone, Mail, ChevronRight, ChevronDown, ArrowUp, Facebook, Instagram, Youtube, Home, Info, BookOpen, Newspaper, Users, Search, Megaphone, Award, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLenis } from "lenis/react";
@@ -21,7 +21,6 @@ export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [programsDropdown, setProgramsDropdown] = useState<Program[]>([]);
   const [progDropdownOpen, setProgDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -29,10 +28,6 @@ export function Layout({ children }: { children: ReactNode }) {
   const progRef = useRef<HTMLDivElement>(null);
   const progTimeout = useRef(0);
   const lenis = useLenis();
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [location]);
 
   useEffect(() => {
     lenis?.scrollTo(0, { immediate: true });
@@ -82,6 +77,7 @@ export function Layout({ children }: { children: ReactNode }) {
     { name: "Faculty", path: "/faculty", icon: Users },
     { name: "News", path: "/news", icon: Newspaper },
     { name: "Notices", path: "/notices", icon: Megaphone },
+    { name: "Gallery", path: "/gallery", icon: ImageIcon },
     { name: "Contact", path: "/contact", icon: Phone },
   ];
 
@@ -222,25 +218,54 @@ export function Layout({ children }: { children: ReactNode }) {
                         ref={progRef}
                         onMouseEnter={() => { window.clearTimeout(progTimeout.current); setProgDropdownOpen(true); }}
                         onMouseLeave={() => { progTimeout.current = window.setTimeout(() => setProgDropdownOpen(false), 200); }}
-                        className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 py-2"
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50"
                       >
-                        <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                          All Programs
+                        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Programs by Level</span>
+                          <Link href="/programs">
+                            <span className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer">
+                              View All &rarr;
+                            </span>
+                          </Link>
                         </div>
-                        <div className="max-h-72 overflow-y-auto">
-                          {programsDropdown.map((p) => (
-                            <Link key={p._id} href={`/programs/${p._id}`}>
-                              <span className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-50 hover:text-primary transition-colors cursor-pointer">
-                                <BookOpen className="w-4 h-4 text-slate-500 shrink-0" strokeWidth={2} />
-                                <span className="truncate">{p.title}</span>
-                                {p.level && (
-                                  <span className="ml-auto text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
-                                    {p.level}
-                                  </span>
-                                )}
-                              </span>
-                            </Link>
-                          ))}
+                        <div className="flex divide-x divide-slate-100">
+                          {[
+                            { level: "+2", label: "+2", icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50", hoverBg: "hover:bg-emerald-50" },
+                            { level: "bachelor", label: "Bachelor", icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50", hoverBg: "hover:bg-blue-50" },
+                            { level: "masters", label: "Masters", icon: Award, color: "text-purple-600", bg: "bg-purple-50", hoverBg: "hover:bg-purple-50" },
+                          ].map(({ level, label, icon: Icon, color, bg, hoverBg }) => {
+                            const levelPrograms = programsDropdown.filter(p => p.level === level);
+                            return (
+                              <div key={level} className="flex-1 min-w-0">
+                                <Link href={`/programs?level=${encodeURIComponent(level)}`}>
+                                  <div className={`flex items-center gap-2 px-4 py-3 ${bg} cursor-pointer hover:opacity-80 transition-opacity`}>
+                                    <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                                      <Icon className={`w-4 h-4 ${color}`} strokeWidth={2.5} />
+                                    </div>
+                                    <span className="text-sm font-bold text-slate-800">{label}</span>
+                                    <span className={`ml-auto text-[11px] font-bold ${color} bg-white/80 px-2 py-0.5 rounded-full`}>
+                                      {levelPrograms.length}
+                                    </span>
+                                  </div>
+                                </Link>
+                                <div className="max-h-56 overflow-y-auto">
+                                  {levelPrograms.length > 0 ? (
+                                    levelPrograms.map((p) => (
+                                      <Link key={p._id} href={`/programs/${p._id}`}>
+                                        <span className="flex items-center px-4 py-2 text-sm text-slate-800 font-bold ${hoverBg} transition-colors cursor-pointer group">
+                                          <span className="truncate group-hover:text-primary">{p.title}</span>
+                                        </span>
+                                      </Link>
+                                    ))
+                                  ) : (
+                                    <div className="px-4 py-6 text-center">
+                                      <p className="text-xs text-slate-400">No programs available</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -260,13 +285,6 @@ export function Layout({ children }: { children: ReactNode }) {
               aria-label="Search"
             >
               <Search className="w-5 h-5 text-slate-700" />
-            </button>
-            <button
-              onClick={() => setMenuOpen(true)}
-              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 transition-colors"
-              aria-label="Open menu"
-            >
-              <Menu className="w-5 h-5 text-slate-700" />
             </button>
           </div>
         </div>
@@ -407,87 +425,6 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </footer>
-
-      {/* Mobile sidebar overlay */}
-      <AnimatePresence>
-        {menuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm md:hidden"
-            />
-            <motion.aside
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="fixed top-0 right-0 bottom-0 z-[60] w-[300px] bg-white shadow-2xl md:hidden flex flex-col"
-            >
-              <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-100">
-                <img src="/images/nepalayalogo.png" alt="Nepalaya" className="w-14 h-14 object-contain" />
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5 text-slate-600" />
-                </button>
-              </div>
-              <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
-                {navLinks.map((link) => {
-                  const Icon = link.icon;
-                  const isActive = location === link.path;
-                  return (
-                    <Link key={link.path} href={link.path}>
-                      <span
-                        className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                          isActive
-                            ? "bg-primary text-white shadow-md shadow-primary/20"
-                            : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" strokeWidth={2} />
-                        {link.name}
-                      </span>
-                    </Link>
-                  );
-                })}
-                <div className="pt-4 mt-4 border-t border-slate-100 space-y-3">
-                  <Link href="/admissions" onClick={() => setMenuOpen(false)}>
-                    <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-full h-12 text-sm font-semibold shadow-lg shadow-slate-900/20">
-                      <GraduationCap className="w-4 h-4 mr-2" />
-                      Apply Now
-                    </Button>
-                  </Link>
-                </div>
-              </nav>
-              <div className="px-5 py-5 border-t border-slate-100 space-y-4">
-                <a href="tel:+9779761522442" className="flex items-center gap-3 text-sm font-medium text-slate-600 hover:text-primary transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
-                    <Phone className="w-4 h-4" />
-                  </div>
-                  +977-9761522442
-                </a>
-                <div className="flex items-center gap-2">
-                  <a href="https://www.facebook.com/profile.php?id=61584645043722" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-100 hover:text-blue-600 transition-all">
-                    <Facebook className="w-4 h-4" />
-                  </a>
-                  <a href="https://www.instagram.com/nepalayaedu/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-pink-100 hover:text-pink-600 transition-all">
-                    <Instagram className="w-4 h-4" />
-                  </a>
-                  <a href="https://www.youtube.com/@nepalayaedu" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-red-100 hover:text-red-600 transition-all">
-                    <Youtube className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Floating Apply Now Button */}
       <AnimatePresence>

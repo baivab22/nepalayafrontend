@@ -2,13 +2,28 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Image, Film, X, Save, ChevronUp, ChevronDown, Eye, EyeOff, Play } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Trash2, Image, Film, X, Save, GripVertical, Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
+import {
+  DndContext,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
@@ -24,6 +39,88 @@ interface Slide {
   ctaText: string;
   ctaLink: string;
   createdAt?: string;
+}
+
+function SortableSlide({ slide, idx, onEdit, onDelete, onToggleActive, slidesCount }: {
+  slide: Slide;
+  idx: number;
+  onEdit: (s: Slide) => void;
+  onDelete: (id: string) => void;
+  onToggleActive: (s: Slide) => void;
+  slidesCount: number;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: slide._id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : "auto" as const,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <Card className="group overflow-hidden border-slate-200/60 bg-white shadow-sm hover:shadow-xl transition-all duration-500">
+        <div className="relative aspect-video bg-slate-900">
+          {slide.type === "video" ? (
+            <video
+              src={`${API_URL}${slide.media}`}
+              className="w-full h-full object-cover"
+              muted
+              loop
+              playsInline
+              onMouseEnter={e => (e.target as HTMLVideoElement).play()}
+              onMouseLeave={e => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0; }}
+            />
+          ) : (
+            <img
+              src={`${API_URL}${slide.media}`}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          )}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500" />
+          <div className="absolute top-2 left-2 flex gap-2">
+            <Badge className={slide.active ? "bg-green-500/90 text-white" : "bg-slate-400/90 text-white"}>
+              {slide.active ? <Eye className="w-3 h-3 mr-1" /> : <EyeOff className="w-3 h-3 mr-1" />}
+              {slide.active ? "Active" : "Hidden"}
+            </Badge>
+            <Badge variant="outline" className="bg-white/90 backdrop-blur-sm text-xs">
+              {slide.type === "video" ? <Film className="w-3 h-3 mr-1" /> : <Image className="w-3 h-3 mr-1" />}
+              {slide.type}
+            </Badge>
+          </div>
+          <div className="absolute top-2 right-2">
+            <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">#{idx + 1}</Badge>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500">
+            <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg" onClick={() => onEdit(slide)}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            </Button>
+            <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg hover:text-red-500" onClick={() => onDelete(slide._id)}>
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="p-3 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <button
+              {...attributes}
+              {...listeners}
+              className="h-7 w-7 flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing touch-none"
+            >
+              <GripVertical className="w-4 h-4" />
+            </button>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => onToggleActive(slide)} className="text-slate-500 h-7">
+            {slide.active ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
 }
 
 export default function AdminSlider() {
@@ -42,6 +139,11 @@ export default function AdminSlider() {
   const [ctaLink, setCtaLink] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   const fetchSlides = async () => {
     setLoading(true);
     try {
@@ -56,6 +158,33 @@ export default function AdminSlider() {
   };
 
   useEffect(() => { fetchSlides(); }, []);
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = slides.findIndex(s => s._id === active.id);
+    const newIndex = slides.findIndex(s => s._id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = [...slides];
+    const [moved] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+    setSlides(reordered);
+
+    try {
+      const payload = reordered.map((item, idx) => ({ _id: item._id, order: idx }));
+      const res = await fetch(`${API_URL}/api/slider/reorder`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slides: payload }),
+      });
+      if (!res.ok) throw new Error("Reorder failed");
+    } catch {
+      toast.error("Failed to save order");
+      fetchSlides();
+    }
+  };
 
   const handleFileSelect = (file: File) => {
     setMediaFile(file);
@@ -125,30 +254,6 @@ export default function AdminSlider() {
     }
   };
 
-  const moveSlide = async (id: string, direction: 1 | -1) => {
-    const idx = slides.findIndex(s => s._id === id);
-    if (idx === -1) return;
-    const newIdx = idx + direction;
-    if (newIdx < 0 || newIdx >= slides.length) return;
-    const current = slides[idx];
-    const target = slides[newIdx];
-    try {
-      await fetch(`${API_URL}/api/slider/${current._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...current, order: target.order }),
-      });
-      await fetch(`${API_URL}/api/slider/${target._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...target, order: current.order }),
-      });
-      fetchSlides();
-    } catch {
-      toast.error("Failed to reorder");
-    }
-  };
-
   const toggleActive = async (slide: Slide) => {
     try {
       const res = await fetch(`${API_URL}/api/slider/${slide._id}`, {
@@ -182,7 +287,7 @@ export default function AdminSlider() {
           <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold text-slate-900">Hero Slider</h1>
-              <p className="text-slate-500 mt-1">Manage homepage carousel media</p>
+              <p className="text-slate-500 mt-1">Manage homepage carousel media — drag to reorder</p>
             </div>
             <Button onClick={() => { resetForm(); setModalOpen(true); }} className="bg-primary hover:bg-primary/90 shadow-lg">
               <Plus className="w-4 h-4 mr-2" /> Add Media
@@ -210,76 +315,23 @@ export default function AdminSlider() {
             </Button>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {slides.map((slide, idx) => (
-                <motion.div
-                  key={slide._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  layout
-                >
-                  <Card className="group overflow-hidden border-slate-200/60 bg-white shadow-sm hover:shadow-xl transition-all duration-500">
-                    <div className="relative aspect-video bg-slate-900">
-                      {slide.type === "video" ? (
-                        <video
-                          src={`${API_URL}${slide.media}`}
-                          className="w-full h-full object-cover"
-                          muted
-                          loop
-                          playsInline
-                          onMouseEnter={e => (e.target as HTMLVideoElement).play()}
-                          onMouseLeave={e => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0; }}
-                        />
-                      ) : (
-                        <img
-                          src={`${API_URL}${slide.media}`}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500" />
-                      <div className="absolute top-2 left-2 flex gap-2">
-                        <Badge className={slide.active ? "bg-green-500/90 text-white" : "bg-slate-400/90 text-white"}>
-                          {slide.active ? <Eye className="w-3 h-3 mr-1" /> : <EyeOff className="w-3 h-3 mr-1" />}
-                          {slide.active ? "Active" : "Hidden"}
-                        </Badge>
-                        <Badge variant="outline" className="bg-white/90 backdrop-blur-sm text-xs">
-                          {slide.type === "video" ? <Film className="w-3 h-3 mr-1" /> : <Image className="w-3 h-3 mr-1" />}
-                          {slide.type}
-                        </Badge>
-                      </div>
-                      <div className="absolute top-2 right-2">
-                        <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">#{slide.order}</Badge>
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                        <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg" onClick={() => handleEdit(slide)}>
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                        </Button>
-                        <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg hover:text-red-500" onClick={() => handleDelete(slide._id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveSlide(slide._id, -1)} disabled={idx === 0}>
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveSlide(slide._id, 1)} disabled={idx === slides.length - 1}>
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={() => toggleActive(slide)} className="text-slate-500 h-7">
-                        {slide.active ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </Button>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+            <SortableContext items={slides.map(s => s._id)} strategy={rectSortingStrategy}>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {slides.map((slide, idx) => (
+                  <SortableSlide
+                    key={slide._id}
+                    slide={slide}
+                    idx={idx}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onToggleActive={toggleActive}
+                    slidesCount={slides.length}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 

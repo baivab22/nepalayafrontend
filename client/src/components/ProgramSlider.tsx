@@ -77,6 +77,11 @@ export default function ProgramSlider() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="absolute top-3 right-3 flex gap-2">
+                      {prog.level && (
+                        <Badge className="bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0 font-medium capitalize">
+                          {prog.level}
+                        </Badge>
+                      )}
                       {prog.seats && (
                         <Badge className="bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0 font-medium">
                           <Users className="w-3 h-3 mr-1" />
@@ -96,6 +101,11 @@ export default function ProgramSlider() {
                     </p>
 
                     <div className="flex items-center gap-3 pt-3 mt-auto border-t border-slate-100">
+                      {prog.level && (
+                        <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-0 capitalize text-xs">
+                          {prog.level}
+                        </Badge>
+                      )}
                       <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
                         <Clock className="w-3.5 h-3.5" />
                         {prog.duration || "N/A"}

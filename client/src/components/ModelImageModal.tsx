@@ -178,7 +178,7 @@ export default function ModelImageModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={handleClose}>
-      <div className="relative w-[min(85vw,700px)] aspect-square" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-[min(92vw,700px)] sm:w-[min(85vw,700px)] aspect-[4/5] sm:aspect-square" onClick={(e) => e.stopPropagation()}>
         <img
           key={currentImg.id}
           src={currentImg.url}

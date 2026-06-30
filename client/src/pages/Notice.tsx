@@ -1,5 +1,5 @@
 import { PageTransition } from "@/components/PageTransition";
-import { Calendar, Megaphone, ArrowRight, AlertTriangle, Bookmark, ImageIcon } from "lucide-react";
+import { Calendar, Megaphone, ArrowRight, Bookmark } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
@@ -53,12 +53,6 @@ const categoryColors: Record<string, string> = {
 
 function getCategoryStyle(category: string): string {
   return categoryColors[category] || "bg-slate-100 text-slate-800 border-slate-200";
-}
-
-function getCategoryIcon(category: string) {
-  const important = ["Important Announcement", "Exam Notice", "Result Notice"];
-  if (important.includes(category)) return AlertTriangle;
-  return Megaphone;
 }
 
 export default function Notice() {
@@ -154,9 +148,8 @@ export default function Notice() {
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filtered.map((notice, idx) => {
-                  const Icon = getCategoryIcon(notice.category);
                   const imageUrl = getImageUrl(notice.image);
                   return (
                     <motion.div
@@ -166,39 +159,44 @@ export default function Notice() {
                       transition={{ delay: idx * 0.04 }}
                     >
                       <Link href={`/notices/${notice._id}`}>
-                        <div className="group bg-white rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer">
-                          {imageUrl ? (
-                            <div className="w-full h-48 sm:h-56 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 relative">
+                        <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-500 h-full cursor-pointer hover:-translate-y-1">
+                          <div className="relative h-48 overflow-hidden bg-slate-100">
+                            {imageUrl ? (
                               <img
                                 src={imageUrl}
                                 alt={notice.title}
-                                className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                                loading="lazy"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
-                            </div>
-                          ) : (
-                            <div className="w-full h-32 sm:h-36 bg-gradient-to-br from-primary/5 to-sky-500/5 flex items-center justify-center">
-                              <Icon className="w-10 h-10 text-primary/30" />
-                            </div>
-                          )}
-                          <div className="p-5 sm:p-6">
-                            <div className="flex flex-wrap items-center gap-2 mb-3">
-                              <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getCategoryStyle(notice.category)}`}>
-                                {notice.category}
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-slate-400 bg-gradient-to-br from-slate-50 to-slate-100">
+                                <Megaphone className="w-8 h-8" />
+                              </div>
+                            )}
+                            <div className="absolute top-3 left-3">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/95 backdrop-blur-sm shadow-sm border border-slate-200/50 ${getCategoryStyle(notice.category)}`}>
+                                {notice.category || "Notice"}
                               </span>
-                              <span className="flex items-center gap-1 text-xs text-slate-400">
-                                <Calendar className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="absolute bottom-3 left-3">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-medium">
+                                <Calendar className="w-3 h-3" />
                                 {formatDisplayDate(notice.date)}
                               </span>
                             </div>
-                            <h3 className="text-lg font-bold text-slate-900 leading-snug mb-2 group-hover:text-primary transition-colors">
+                          </div>
+                          <div className="p-5">
+                            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors font-display leading-snug line-clamp-2">
                               {notice.title}
                             </h3>
-                            <p className="text-slate-600 text-sm leading-relaxed line-clamp-2">
+                            <p className="text-slate-600 text-sm font-medium leading-relaxed line-clamp-2 font-sans">
                               {stripHtml(notice.description)}
                             </p>
-                            <div className="mt-4 flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
-                              Read More <ArrowRight className="w-4 h-4" />
+                            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                              <span className="text-primary font-semibold text-sm inline-flex items-center group-hover:gap-2 transition-all duration-300">
+                                Read more
+                                <ArrowRight className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1.5 transition-transform duration-300" />
+                              </span>
                             </div>
                           </div>
                         </div>

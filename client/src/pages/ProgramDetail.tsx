@@ -16,6 +16,7 @@ interface Program {
   icon?: string;
   duration?: string;
   seats?: number;
+  level?: string;
   order?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -123,6 +124,11 @@ export default function ProgramDetail() {
                   {program.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-3">
+                  {program.level && (
+                    <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-0 capitalize gap-1.5">
+                      {program.level}
+                    </Badge>
+                  )}
                   {program.duration && (
                     <Badge variant="secondary" className="bg-primary/10 text-primary border-0 gap-1.5">
                       <Clock className="w-3.5 h-3.5" />

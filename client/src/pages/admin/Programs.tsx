@@ -45,6 +45,7 @@ interface Program {
   description: string;
   duration?: string;
   seats?: number;
+  level?: string;
   image?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -55,6 +56,7 @@ interface ProgramForm {
   description: string;
   duration: string;
   seats: string;
+  level: string;
   image?: string;
 }
 
@@ -83,7 +85,7 @@ export default function AdminPrograms() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState<ProgramForm>({ title: "", description: "", duration: "", seats: "" });
+  const [form, setForm] = useState<ProgramForm>({ title: "", description: "", duration: "", seats: "", level: "" });
   const [editing, setEditing] = useState<Program | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -107,6 +109,7 @@ export default function AdminPrograms() {
         description: p.description || "",
         duration: p.duration || "",
         seats: p.seats,
+        level: p.level || "",
         image: p.image,
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
@@ -159,6 +162,7 @@ export default function AdminPrograms() {
       const body: Record<string, unknown> = {
         title: form.title,
         description: form.description,
+        level: form.level,
       };
       if (form.duration) body.duration = form.duration;
       if (form.seats) body.seats = Number(form.seats);
@@ -191,6 +195,7 @@ export default function AdminPrograms() {
       description: prog.description || "",
       duration: prog.duration || "",
       seats: prog.seats ? String(prog.seats) : "",
+      level: prog.level || "",
       image: prog.image || "",
     });
     if (prog.image) {
@@ -216,7 +221,7 @@ export default function AdminPrograms() {
   };
 
   const resetForm = () => {
-    setForm({ title: "", description: "", duration: "", seats: "", image: "" });
+    setForm({ title: "", description: "", duration: "", seats: "", level: "", image: "" });
     setEditing(null);
     setImageFile(null);
     setImagePreview("");
@@ -344,6 +349,11 @@ export default function AdminPrograms() {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <div className="absolute top-3 right-3 flex gap-2">
+                        {prog.level && (
+                          <Badge className="bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0 font-medium capitalize">
+                            {prog.level}
+                          </Badge>
+                        )}
                         {prog.seats && (
                           <Badge className="bg-white/90 backdrop-blur-sm text-slate-700 shadow-sm border-0 font-medium">
                             <Users className="w-3 h-3 mr-1" />
@@ -392,6 +402,11 @@ export default function AdminPrograms() {
 
                       {/* Meta */}
                       <div className="flex items-center gap-3 pt-3 mt-auto border-t border-slate-100">
+                        {prog.level && (
+                          <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-0 capitalize text-xs">
+                            {prog.level}
+                          </Badge>
+                        )}
                         <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
                           <Clock className="w-3.5 h-3.5" />
                           {prog.duration || "N/A"}
@@ -539,6 +554,25 @@ export default function AdminPrograms() {
               </div>
             </div>
 
+            {/* Level */}
+            <div>
+              <Label htmlFor="level" className="text-sm font-semibold mb-2 block">
+                Level <span className="text-red-500">*</span>
+              </Label>
+              <select
+                id="level"
+                value={form.level}
+                onChange={e => setForm(f => ({ ...f, level: e.target.value }))}
+                required
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              >
+                <option value="" disabled>Select level...</option>
+                <option value="+2">+2</option>
+                <option value="bachelor">Bachelor</option>
+                <option value="masters">Masters</option>
+              </select>
+            </div>
+
             {/* Rich Text Description */}
             <div>
               <Label htmlFor="description" className="text-sm font-semibold mb-2 block">
@@ -663,6 +697,11 @@ export default function AdminPrograms() {
               )}
 
               <div className="flex flex-wrap items-center gap-4 border-b border-slate-200 pb-3">
+                {viewingProgram.level && (
+                  <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-0 capitalize gap-1">
+                    {viewingProgram.level}
+                  </Badge>
+                )}
                 {viewingProgram.duration && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-0 gap-1">
                     <Clock className="w-3 h-3" />

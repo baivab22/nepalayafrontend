@@ -21,6 +21,7 @@ import NewsDetail from "@/pages/NewsDetail";
 import Contact from "@/pages/Contact";
 import Notice from "@/pages/Notice";
 import NoticeDetail from "@/pages/NoticeDetail";
+import GalleryPage from "@/pages/Gallery";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
@@ -107,6 +108,7 @@ function Router() {
               <Route path="/news/:id" component={NewsDetail} />
               <Route path="/notices" component={Notice} />
               <Route path="/notices/:id" component={NoticeDetail} />
+              <Route path="/gallery" component={GalleryPage} />
               <Route path="/contact" component={Contact} />
               <Route component={NotFound} />
             </Switch>
