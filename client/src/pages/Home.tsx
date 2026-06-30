@@ -12,7 +12,7 @@ import NoticeSlider from "@/components/NoticeSlider";
 import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { 
   ArrowRight, BookOpen, Users, Trophy, ChevronRight,
-  Microscope, X,
+  Microscope, X, GraduationCap,
 } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
@@ -287,6 +287,15 @@ export default function Home() {
   const [slides, setSlides] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slidesLoaded, setSlidesLoaded] = useState(false);
+  const [sloganIdx, setSloganIdx] = useState(0);
+
+  const programSlogans = [
+    { program: "School +2", slogan: "Building Strong Foundations for Tomorrow" },
+    { program: "B.Sc. CSIT", slogan: "Shaping Future Tech Leaders" },
+    { program: "BCA", slogan: "Code Your Future, Create the World" },
+    { program: "BA", slogan: "Broaden Your Horizons, Find Your Voice" },
+    { program: "MBA", slogan: "Lead with Purpose, Transform Business" },
+  ];
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const initialRender = useRef(true);
 
@@ -314,11 +323,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    const sloganInterval = setInterval(() => {
+      setSloganIdx(prev => (prev + 1) % programSlogans.length);
+    }, 5000);
+    if (slides.length <= 1) return () => clearInterval(sloganInterval);
     intervalRef.current = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % slides.length);
+      setSloganIdx(prev => (prev + 1) % programSlogans.length);
     }, 6000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => {
+      clearInterval(sloganInterval);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [slides.length]);
 
   const goToSlide = (idx: number) => {
@@ -356,21 +372,43 @@ export default function Home() {
               </motion.div>
               <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/70 to-transparent" />
             </div>
-            <div className="absolute inset-0 pt-28 sm:pt-32 md:pt-44 px-4 sm:px-8 md:px-16 lg:px-24">
-              <div className="max-w-2xl">
-                <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-black text-white leading-tight uppercase">
-                  Shaping the Future of Education
-                </h1>
+            <div className="absolute inset-0 pt-36 sm:pt-44 md:pt-56 px-4 sm:px-8 md:px-16 lg:px-24">
+              <div className="max-w-2xl lg:max-w-4xl">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={sloganIdx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <span className="inline-flex items-center px-5 py-2 rounded-full bg-black/70 backdrop-blur-sm text-white font-black text-base sm:text-lg md:text-xl uppercase tracking-wider mb-4 shadow-lg">
+                      {programSlogans[sloganIdx].program}
+                    </span>
+                    <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-black text-white leading-tight uppercase">
+                      {programSlogans[sloganIdx].slogan}
+                    </h1>
+                  </motion.div>
+                </AnimatePresence>
                 <p className="text-base md:text-lg text-slate-300 mt-3 font-medium">
                   Nepalaya Educational Foundation
                 </p>
-                <div className="mt-10">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-10"
+                >
                   <Link href="/admissions">
-                    <Button className="h-12 px-8 text-base bg-primary hover:bg-primary/90 text-white rounded-full shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 border-0">
-                      Apply Now <ArrowRight className="ml-2 w-4 h-4" />
+                        <Button className="group h-12 px-8 text-base bg-black hover:bg-black/80 text-white rounded-full shadow-2xl shadow-black/30 hover:shadow-black/50 transition-all duration-300 border-0 font-bold tracking-wide hover:scale-105 active:scale-95 relative overflow-hidden">
+                      <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <span className="relative z-10 inline-flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5" />
+                        Apply Now <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                      </span>
                     </Button>
                   </Link>
-                </div>
+                </motion.div>
               </div>
             </div>
           </div>
@@ -424,11 +462,21 @@ export default function Home() {
                 transition={{ duration: 0.5 }}
                 className="absolute inset-0 z-10"
               >
-                <div className="absolute inset-0 pt-28 sm:pt-32 md:pt-44 px-4 sm:px-8 md:px-16 lg:px-24">
-                  <div className="max-w-2xl">
+                <div className="absolute inset-0 pt-36 sm:pt-44 md:pt-56 px-4 sm:px-8 md:px-16 lg:px-24">
+                  <div className="max-w-2xl lg:max-w-4xl">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="mb-4"
+                    >
+                      <span className="inline-flex items-center px-5 py-2 rounded-full bg-black/70 backdrop-blur-sm text-white font-black text-base sm:text-lg md:text-xl uppercase tracking-wider border border-white/10 shadow-lg">
+                        {slides[currentSlide]?.subtitle || programSlogans[sloganIdx].program}
+                      </span>
+                    </motion.div>
                     <TypedText
-                      title={slides[currentSlide]?.title || "Shaping the Future of Education"}
-                      subtitle={slides[currentSlide]?.subtitle || "Nepalaya Educational Foundation"}
+                      title={slides[currentSlide]?.title || programSlogans[sloganIdx].slogan}
+                      subtitle=""
                       slideKey={currentSlide}
                     />
                     <motion.div
@@ -438,8 +486,12 @@ export default function Home() {
                       className="mt-10"
                     >
                       <Link href={slides[currentSlide]?.ctaLink || "/admissions"}>
-                        <Button className="h-12 px-8 text-base bg-primary hover:bg-primary/90 text-white rounded-full shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 border-0">
-                          {slides[currentSlide]?.ctaText || "Apply Now"} <ArrowRight className="ml-2 w-4 h-4" />
+                        <Button className="group h-12 px-8 text-base bg-black hover:bg-black/80 text-white rounded-full shadow-2xl shadow-black/30 hover:shadow-black/50 transition-all duration-300 border-0 font-bold tracking-wide hover:scale-105 active:scale-95 relative overflow-hidden">
+                          <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <span className="relative z-10 inline-flex items-center gap-2">
+                            <GraduationCap className="w-5 h-5" />
+                            {slides[currentSlide]?.ctaText || "Apply Now"} <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                          </span>
                         </Button>
                       </Link>
                     </motion.div>
@@ -702,6 +754,81 @@ export default function Home() {
           </div>
         </div>
       </motion.section>
+
+      {/* BOARD MEMBERS SECTION */}
+      <section className="py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12"
+          >
+            <h4 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Leadership</h4>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight mb-3">
+              Board Members
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Meet the dedicated leaders guiding Nepalaya's vision and mission
+            </p>
+          </motion.div>
+
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+            {[
+              {
+                name: "Bijay Moktan",
+                role: "Director",
+                image: `${import.meta.env.BASE_URL}images/bijaya.jpeg`,
+              },
+              {
+                name: "Jit Bahadur Lamichhane",
+                role: "Principal",
+                image: `${import.meta.env.BASE_URL}images/principle.jpg`,
+              },
+              {
+                name: "Govinda Pd. Paudyal",
+                role: "Chairman",
+                initials: "GP",
+                initialsBg: "bg-primary/10",
+                initialsText: "text-primary",
+              },
+              {
+                name: "Pushkal Raj Pant",
+                role: "CEO / Founder Principal",
+                initials: "PR",
+                initialsBg: "bg-emerald-50",
+                initialsText: "text-emerald-600",
+              },
+            ].map((member, idx) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: idx * 0.15 }}
+                className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 text-center w-64"
+              >
+                <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 bg-slate-100 flex items-center justify-center">
+                  {"image" in member ? (
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className={`text-xl font-bold ${member.initialsText}`}>
+                      {member.initials}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">{member.name}</h3>
+                <p className="text-sm text-slate-500 font-medium mt-1">{member.role}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <ProgramSlider />
 

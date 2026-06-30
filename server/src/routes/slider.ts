@@ -78,6 +78,25 @@ router.get("/slider/:id", async (req, res) => {
   }
 });
 
+router.put("/slider/reorder", async (req, res) => {
+  const { slides: orderedSlides } = req.body;
+  if (!Array.isArray(orderedSlides)) {
+    return res.status(400).json({ error: "slides must be an array" });
+  }
+  try {
+    const ops = orderedSlides.map((item: { _id: string; order: number }, idx: number) => ({
+      updateOne: {
+        filter: { _id: item._id },
+        update: { $set: { order: idx } },
+      },
+    }));
+    await SliderModel.bulkWrite(ops);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to reorder slides" });
+  }
+});
+
 router.put("/slider/:id", async (req, res) => {
   const parsed = sliderSchemaZ.safeParse(req.body);
   if (!parsed.success) {

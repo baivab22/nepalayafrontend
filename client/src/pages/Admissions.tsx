@@ -194,9 +194,7 @@ export default function Admissions() {
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-20 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-flex p-3 bg-primary/10 rounded-2xl mb-4">
-              <Sparkles className="w-8 h-8 text-primary" />
-            </div>
+     
             <h1 className="text-4xl md:text-5xl font-bold text-white">
               Admission Application
             </h1>
