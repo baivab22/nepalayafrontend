@@ -155,44 +155,29 @@ const app: Express = express();
 const uploadsBase = path.resolve(process.env.UPLOAD_DIR || process.cwd(), "uploads");
 if (!fs.existsSync(uploadsBase)) fs.mkdirSync(uploadsBase, { recursive: true });
 
-// Get allowed origins from environment
-const getAllowedOrigins = (): string[] => {
-  const isDev = process.env.NODE_ENV === "development";
-  const frontendUrl = process.env.FRONTEND_URL;
-  
-  if (isDev) {
-    // Development: allow localhost variants
-    return ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"];
+// CORS configuration
+const corsOrigin = (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void): void => {
+  if (!origin || process.env.NODE_ENV === "development") {
+    cb(null, true);
+    return;
   }
-  
-  // Production: use FRONTEND_URL or default to allow all
-  return frontendUrl ? [frontendUrl] : ["*"];
+  const allowed = process.env.FRONTEND_URL;
+  if (allowed) {
+    cb(null, allowed === origin);
+  } else {
+    cb(null, true);
+  }
 };
 
-// CORS middleware with environment-aware origins
 app.use(
   cors({
-    origin: getAllowedOrigins(),
+    origin: corsOrigin,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'x-admin-password'],
     exposedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   })
 );
-
-// Manual OPTIONS preflight handler (cors v2 + Express 5 can be unreliable)
-app.use((req: Request, res: Response, next: NextFunction): void => {
-  if (req.method !== 'OPTIONS') { next(); return; }
-  const origins = getAllowedOrigins();
-  const origin = req.headers.origin || '';
-  if (origins.includes('*') || origins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, x-admin-password');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(204);
-});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
