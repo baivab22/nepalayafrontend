@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 
 function stripHtml(html: string) {
   const doc = new DOMParser().parseFromString(html, "text/html");

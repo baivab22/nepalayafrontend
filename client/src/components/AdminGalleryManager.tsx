@@ -12,7 +12,7 @@ interface GalleryImage {
   createdAt?: string;
 }
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 
 export function AdminGalleryManager() {
   const [images, setImages] = useState<GalleryImage[]>([]);

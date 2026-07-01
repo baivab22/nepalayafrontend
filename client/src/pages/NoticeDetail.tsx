@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 
 interface NoticeItem {
   _id?: string;

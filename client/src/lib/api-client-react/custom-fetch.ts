@@ -301,10 +301,7 @@ export async function customFetch<T = unknown>(
   // Prepend VITE_API_BASE_URL to relative API paths
   let url = resolveUrl(input);
   if (url.startsWith("/api/")) {
-    const base = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL
-      ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
-      : "http://localhost:8000";
-    url = base + url;
+    url = "https://nepalaya-apis.onrender.com" + url;
   }
   const requestInfo = { method, url };
 

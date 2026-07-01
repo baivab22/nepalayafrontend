@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/PageTransition";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 
 interface Faculty {
   _id: string;

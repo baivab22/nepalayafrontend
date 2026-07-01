@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { Link } from "wouter";
 import { FaFacebook, FaTwitter, FaWhatsapp, FaLinkedinIn } from "react-icons/fa";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 
 function stripHtml(html: string) {
   const doc = new DOMParser().parseFromString(html, "text/html");

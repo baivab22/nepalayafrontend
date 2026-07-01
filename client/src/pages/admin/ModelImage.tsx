@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 const ADMIN_PASSWORD = sessionStorage.getItem("nepalaya_admin_auth") || "";
 
 const adminHeaders = (): Record<string, string> => ({

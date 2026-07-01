@@ -32,7 +32,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 
 // Zod schema matching the backend spec exactly
 const admissionSchema = z.object({

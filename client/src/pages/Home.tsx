@@ -91,7 +91,7 @@ const FacultyDetailModal = ({ faculty, open, onClose, getPhotoUrl }: { faculty: 
   );
 };
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 
 const getPhotoUrl = (photo: string) => {
   if (!photo) return "";
@@ -390,9 +390,9 @@ export default function Home() {
                     </h1>
                   </motion.div>
                 </AnimatePresence>
-                <p className="text-base md:text-lg text-slate-300 mt-3 font-medium">
-                  Nepalaya Educational Foundation
-                </p>
+                  <p className="text-base md:text-lg text-slate-300 mt-3 font-medium italic">
+                    Your Local "GLOBAL SCHOOL"
+                  </p>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -479,6 +479,9 @@ export default function Home() {
                       subtitle=""
                       slideKey={currentSlide}
                     />
+                    <p className="text-lg md:text-xl text-white/80 mt-2 font-medium italic">
+                      Your Local "GLOBAL SCHOOL"
+                    </p>
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}

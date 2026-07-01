@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { FaFacebook, FaTwitter, FaWhatsapp, FaLinkedinIn, FaLink } from "react-icons/fa";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_URL = "https://nepalaya-apis.onrender.com";
 
 interface NewsItem {
   _id?: string;

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE = "https://nepalaya-apis.onrender.com";
 
 const resolveUrl = (url: string) =>
   /^https?:\/\//.test(url) ? url : `${API_BASE}${url}`;
