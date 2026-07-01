@@ -9,7 +9,8 @@ import fs from "fs";
 const router: IRouter = Router();
 
 // --- Faculty Photo Upload Setup ---
-const uploadDir = path.resolve(process.cwd(), "uploads/faculty-photo");
+const uploadBase = () => process.env.UPLOAD_DIR || process.cwd();
+const uploadDir = path.resolve(uploadBase(), "uploads/faculty-photo");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage: StorageEngine = multer.diskStorage({
   destination: (_req: Express.Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => cb(null, uploadDir),

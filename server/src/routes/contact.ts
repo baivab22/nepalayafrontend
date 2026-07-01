@@ -4,7 +4,7 @@ import { ContactModel, insertContactSchema } from "../db/schema";
 
 const router = Router();
 
-const TO_EMAIL = "bidaribaivab7@gmail.com";
+const TO_EMAIL = process.env.CONTACT_TO_EMAIL ?? "bidaribaivab7@gmail.com";
 
 router.post("/contact", async (req, res) => {
   try {
