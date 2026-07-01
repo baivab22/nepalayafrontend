@@ -1,15 +1,18 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { fileURLToPath } from "url";
 import { mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import { GalleryModel } from "../db/schema";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
 
-const uploadsDir = path.resolve(__dirname, "../../artifacts/api-server/uploads/gallery");
+const getUploadDir = () => {
+  const base = process.env.UPLOAD_DIR || process.cwd();
+  return path.resolve(base, "uploads/gallery");
+};
+
+const uploadsDir = getUploadDir();
 
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -41,7 +44,6 @@ const upload = multer({
   },
 });
 
-// GET all gallery images, optionally filtered by category
 router.get("/", async (req, res) => {
   try {
     const filter: Record<string, unknown> = {};
@@ -55,7 +57,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET all distinct categories
 router.get("/categories", async (_req, res) => {
   try {
     const categories = await GalleryModel.distinct("category");
@@ -65,7 +66,6 @@ router.get("/categories", async (_req, res) => {
   }
 });
 
-// POST - Add image to gallery
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
@@ -88,7 +88,6 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 });
 
-// PUT - Update image (e.g. change category)
 router.put("/:id", async (req, res) => {
   try {
     const updated = await GalleryModel.findByIdAndUpdate(
@@ -103,7 +102,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE - Remove image from gallery
 router.delete("/:id", async (req, res) => {
   try {
     const result = await GalleryModel.findByIdAndDelete(req.params.id);
@@ -118,7 +116,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// Serve uploaded images
 router.get("/images/:filename", (req, res) => {
   try {
     const filepath = path.join(uploadsDir, req.params.filename);
