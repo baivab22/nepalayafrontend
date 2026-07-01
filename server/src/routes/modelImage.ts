@@ -15,8 +15,7 @@ const requireAdmin = (req: Request, res: Response, next: NextFunction): void => 
   next();
 };
 
-const uploadBase = () => process.env.UPLOAD_DIR || process.cwd();
-const uploadDir = path.resolve(uploadBase(), "uploads");
+const uploadDir = path.resolve(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const imagesJsonPath = path.join(uploadDir, "model-images.json");

@@ -7,8 +7,7 @@ import fs from "fs";
 const router: IRouter = Router();
 
 // --- Program Image Upload Setup ---
-const uploadBase = () => process.env.UPLOAD_DIR || process.cwd();
-const programUploadDir = path.resolve(uploadBase(), "uploads/program-images");
+const programUploadDir = path.resolve(process.cwd(), "uploads/program-images");
 if (!fs.existsSync(programUploadDir)) fs.mkdirSync(programUploadDir, { recursive: true });
 
 const programStorage: StorageEngine = multer.diskStorage({

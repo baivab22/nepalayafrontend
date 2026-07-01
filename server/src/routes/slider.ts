@@ -6,8 +6,7 @@ import fs from "fs";
 
 const router: IRouter = Router();
 
-const uploadBase = () => process.env.UPLOAD_DIR || process.cwd();
-const sliderUploadDir = path.resolve(uploadBase(), "uploads/slider-images");
+const sliderUploadDir = path.resolve(process.cwd(), "uploads/slider-images");
 if (!fs.existsSync(sliderUploadDir)) fs.mkdirSync(sliderUploadDir, { recursive: true });
 
 const sliderStorage: StorageEngine = multer.diskStorage({

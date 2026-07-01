@@ -6,8 +6,7 @@ import fs from "fs";
 
 const router: IRouter = Router();
 
-const uploadBase = () => process.env.UPLOAD_DIR || process.cwd();
-const noticeUploadDir = path.resolve(uploadBase(), "uploads/notice-images");
+const noticeUploadDir = path.resolve(process.cwd(), "uploads/notice-images");
 if (!fs.existsSync(noticeUploadDir)) fs.mkdirSync(noticeUploadDir, { recursive: true });
 
 const noticeStorage: StorageEngine = multer.diskStorage({

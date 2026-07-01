@@ -145,15 +145,9 @@
 
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
-import fs from "fs";
-import path from "path";
-import mongoose from "mongoose";
 import router from "./routes";
 
 const app: Express = express();
-
-const uploadsBase = path.resolve(process.env.UPLOAD_DIR || process.cwd(), "uploads");
-if (!fs.existsSync(uploadsBase)) fs.mkdirSync(uploadsBase, { recursive: true });
 
 // Get allowed origins from environment
 const getAllowedOrigins = (): string[] => {
@@ -208,19 +202,10 @@ app.use("/api", router);
 
 // Health check endpoint
 app.get("/health", (_req: Request, res: Response): void => {
-  const dbState = mongoose.connection.readyState;
-  const dbStatus: Record<number, string> = {
-    0: "disconnected",
-    1: "connected",
-    2: "connecting",
-    3: "disconnecting",
-  };
-  const healthy = dbState === 1;
-  res.status(healthy ? 200 : 503).json({
-    status: healthy ? "ok" : "degraded",
+  res.status(200).json({
+    status: "ok",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development",
-    database: dbStatus[dbState] || "unknown",
+    environment: process.env.NODE_ENV || "development"
   });
 });
 

@@ -7,9 +7,8 @@ import fs from "fs";
 const router: IRouter = Router();
 
 // --- News Image Upload Setup ---
-const uploadBase = () => process.env.UPLOAD_DIR || process.cwd();
 const newsUploadDir = path.resolve(
-  uploadBase(),
+  process.cwd(),
   "uploads/news-images",
 );
 if (!fs.existsSync(newsUploadDir)) fs.mkdirSync(newsUploadDir, { recursive: true });
